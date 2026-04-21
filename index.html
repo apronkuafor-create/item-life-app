@@ -1,684 +1,118 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eşyamın Hayatı</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background .25s ease, color .25s ease;
-    }
-    .app {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top right, var(--glow) 0%, transparent 24%),
-        radial-gradient(circle at bottom left, var(--glow2) 0%, transparent 20%),
-        var(--bg);
-    }
-    .topbar {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      display:flex; align-items:center; gap:10px;
-      position:sticky; top:0; z-index:20;
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter: blur(14px);
-    }
-    .container { padding: 16px; }
-    .card, .hero-banner, .section, .mini {
-      background: var(--card);
-      border: 1px solid var(--line);
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-    }
-    .card {
-      border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor:pointer;
-    }
-    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .btn {
-      border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
-      font-weight:700; color: var(--text);
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color:#fff;
-      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
-    }
-    .btn-dark {
-      background: var(--card-2);
-      color: var(--text);
-      border:1px solid var(--line);
-    }
-    .muted { color: var(--muted); font-size:12px; }
-    .hero-banner { border-radius: 22px; padding: 16px; margin-bottom: 14px; }
-    .hero-grid { display:grid; grid-template-columns: 76px 1fr; gap:14px; align-items:center; }
-    .hero-icon {
-      width:76px; height:76px; border-radius:24px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:38px;
-      background: linear-gradient(135deg, var(--accent-soft), var(--card-2));
-      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
-    }
-    .theme-row { display:flex; gap:8px; margin-top: 12px; flex-wrap: wrap; }
-    .theme-chip {
-      width: 22px; height: 22px; border-radius: 999px; border: 2px solid rgba(255,255,255,.22);
-      cursor: pointer;
-      box-shadow: 0 0 0 2px transparent;
-    }
-    .theme-chip.active { box-shadow: 0 0 0 2px #fff; }
-    .scene-page {
-      min-height: calc(100vh - 57px);
-      background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 30%, var(--card)) 0%, var(--card-2) 100%);
-      position:relative; overflow:hidden;
-    }
-    .scene-grid {
-      position:absolute; inset:0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-    }
-    .scene-frame {
-      position:absolute; inset:18px; border:2px solid color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,.06)); border-radius:18px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-    .room-label {
-      position:absolute; top:14px; left:14px;
-      background: color-mix(in srgb, var(--card) 85%, transparent);
-      padding:8px 14px; border-radius:12px; font-size:14px; font-weight:700; z-index:5;
-      border: 1px solid var(--line);
-      backdrop-filter: blur(10px);
-    }
-    .item-node {
-      position:absolute; transform:translate(-50%,-50%);
-      cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none;
-      width: 122px;
-    }
-    .item-node.dragging { cursor:grabbing; z-index:20; }
-    .icon-wrap {
-      width:88px; margin:0 auto;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--itemColor) 18%, #fff) 0%, color-mix(in srgb, var(--itemColor) 9%, transparent) 100%);
-      border: 1px solid color-mix(in srgb, var(--itemColor) 55%, var(--line));
-      border-radius: 26px;
-      padding: 10px;
-      box-shadow: 0 14px 30px rgba(0,0,0,.22);
-      position: relative;
-    }
-    .icon-core {
-      width:68px; height:68px; margin:0 auto;
-      border-radius:20px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:34px;
-      background:
-        radial-gradient(circle at 30% 25%, rgba(255,255,255,.32), transparent 30%),
-        linear-gradient(145deg, color-mix(in srgb, var(--itemColor) 30%, #fff) 0%, color-mix(in srgb, var(--itemColor) 70%, #111) 100%);
-      border:1px solid rgba(255,255,255,.15);
-    }
-    .color-dot {
-      position:absolute; right:8px; top:8px;
-      width:14px; height:14px; border-radius:999px;
-      border:2px solid rgba(255,255,255,.75);
-      background: var(--itemColor);
-      box-shadow: 0 2px 8px rgba(0,0,0,.35);
-    }
-    .item-name {
-      margin-top:8px; font-size:12px; color:var(--text);
-      background: color-mix(in srgb, var(--card) 80%, transparent);
-      padding:4px 10px; border-radius:999px;
-      display:inline-block; max-width:118px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      border: 1px solid var(--line);
-      font-weight: 700;
-    }
-    .item-model {
-      margin-top:4px; font-size:10px; color:var(--muted);
-      display:block; max-width:118px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-    .item-color {
-      margin-top:3px; font-size:10px; color:var(--accent);
-      font-weight: 700;
-    }
-    .section { border-radius:18px; padding:16px; margin-bottom:14px; }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .mini { border-radius:14px; padding:12px 14px; }
-    .modal-backdrop {
-      position:fixed; inset:0; background:rgba(0,0,0,.72);
-      display:flex; align-items:center; justify-content:center; padding:16px; z-index:999;
-      backdrop-filter: blur(10px);
-    }
-    .modal {
-      width:100%; max-width:700px; max-height:88vh; overflow:auto;
-      background: var(--card); border-radius:24px; padding:20px; border: 1px solid var(--line);
-      box-shadow: 0 30px 60px rgba(0,0,0,.35);
-    }
-    input, select, textarea {
-      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
-      background: var(--card-2); color: var(--text); outline:none;
-    }
-    label { display:block; margin-bottom:10px; }
-    h1,h2,h3,p { margin:0; }
-    .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; }
-    .doc-pill {
-      display:inline-block; background:var(--card-2); border:1px solid var(--line); border-radius:999px;
-      padding:6px 10px; font-size:11px; margin:4px 6px 0 0;
-    }
-    .palette-grid {
-      display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:8px;
-    }
-    .color-choice {
-      height:34px; border-radius:10px; border:2px solid rgba(255,255,255,.14); cursor:pointer;
-      display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;
-    }
-    .color-choice.active { border-color: #fff; }
-    @media (max-width: 640px) {
-      .grid2 { grid-template-columns:1fr; }
-      .palette-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eşyamın Hayatı</title>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+body{margin:0;background:#0a0a0c;color:#fff;font-family:Arial}
+.top{padding:14px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
+.container{padding:16px}
+.card{background:#141416;padding:14px;border-radius:12px;margin-bottom:10px;cursor:pointer}
+.scene{height:100vh;position:relative;background:#0f0f12}
+.item{position:absolute;transform:translate(-50%,-50%);text-align:center}
+.name{font-size:12px;margin-top:4px}
+.model{font-size:10px;color:#888}
+</style>
 </head>
+
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
-const { useMemo, useState, useRef } = React;
 
-const THEMES = {
-  warm: {
-    name: "Warm",
-    bg: "#0d0a0a",
-    text: "#f6f0ea",
-    muted: "#b8a99b",
-    card: "#191312",
-    card2: "#241c1a",
-    line: "#332825",
-    accent: "#f59e0b",
-    accent2: "#ef4444",
-    accentSoft: "#3a2417",
-    glow: "rgba(245,158,11,.14)",
-    glow2: "rgba(239,68,68,.10)"
-  },
-  forest: {
-    name: "Forest",
-    bg: "#08110c",
-    text: "#edf7f1",
-    muted: "#9db6a7",
-    card: "#101915",
-    card2: "#17231d",
-    line: "#24352d",
-    accent: "#22c55e",
-    accent2: "#14b8a6",
-    accentSoft: "#173625",
-    glow: "rgba(34,197,94,.12)",
-    glow2: "rgba(20,184,166,.08)"
-  },
-  royal: {
-    name: "Royal",
-    bg: "#0b0b15",
-    text: "#f0f1fb",
-    muted: "#a8adca",
-    card: "#141727",
-    card2: "#1b2035",
-    line: "#2b3352",
-    accent: "#6366f1",
-    accent2: "#a855f7",
-    accentSoft: "#1c1f40",
-    glow: "rgba(99,102,241,.14)",
-    glow2: "rgba(168,85,247,.08)"
-  }
-};
+const {useState} = React
 
-const ITEM_CATEGORIES = {
-  "Elektronik Eşyalar": [
-    { name: "Telefon", type: "Elektronik" }, { name: "Televizyon", type: "Elektronik" },
-    { name: "Laptop", type: "Elektronik" }, { name: "Tablet", type: "Elektronik" },
-    { name: "Monitör", type: "Elektronik" }, { name: "Hoparlör", type: "Elektronik" },
-    { name: "Kulaklık", type: "Elektronik" }, { name: "Oyun Konsolu", type: "Elektronik" },
-    { name: "Modem", type: "Elektronik" }, { name: "Klima", type: "Elektronik" },
-    { name: "Akıllı Saat", type: "Elektronik" }, { name: "Projektör", type: "Elektronik" }
-  ],
-  "Mobilyalar": [
-    { name: "Koltuk Takımı", type: "Mobilya" }, { name: "Kanepe", type: "Mobilya" },
-    { name: "Masa", type: "Mobilya" }, { name: "Sandalye", type: "Mobilya" },
-    { name: "Yatak", type: "Mobilya" }, { name: "Dolap", type: "Mobilya" },
-    { name: "Kitaplık", type: "Mobilya" }, { name: "TV Ünitesi", type: "Mobilya" },
-    { name: "Komodin", type: "Mobilya" }, { name: "Şifonyer", type: "Mobilya" },
-    { name: "Çalışma Masası", type: "Mobilya" }, { name: "Ofis Koltuğu", type: "Mobilya" }
-  ],
-  "Beyaz Eşyalar": [
-    { name: "Buzdolabı", type: "Beyaz Eşya" }, { name: "Çamaşır Makinesi", type: "Beyaz Eşya" },
-    { name: "Bulaşık Makinesi", type: "Beyaz Eşya" }, { name: "Kurutma Makinesi", type: "Beyaz Eşya" },
-    { name: "Fırın", type: "Beyaz Eşya" }, { name: "Derin Dondurucu", type: "Beyaz Eşya" },
-    { name: "Set Üstü Ocak", type: "Beyaz Eşya" }
-  ],
-  "Mutfak Eşyaları": [
-    { name: "Mikrodalga", type: "Mutfak Eşyası" }, { name: "Kahve Makinesi", type: "Mutfak Eşyası" },
-    { name: "Blender", type: "Mutfak Eşyası" }, { name: "Su Isıtıcı", type: "Mutfak Eşyası" },
-    { name: "Airfryer", type: "Mutfak Eşyası" }, { name: "Tost Makinesi", type: "Mutfak Eşyası" },
-    { name: "Meyve Sıkacağı", type: "Mutfak Eşyası" }
-  ],
-  "Aydınlatma": [
-    { name: "Abajur", type: "Aydınlatma" }, { name: "Lamba", type: "Aydınlatma" },
-    { name: "Avize", type: "Aydınlatma" }, { name: "Gece Lambası", type: "Aydınlatma" },
-    { name: "Masa Lambası", type: "Aydınlatma" }
-  ],
-  "Kişisel Eşyalar": [
-    { name: "Saat", type: "Kişisel Eşya" }, { name: "Gözlük", type: "Kişisel Eşya" },
-    { name: "Çanta", type: "Kişisel Eşya" }, { name: "Cüzdan", type: "Kişisel Eşya" },
-    { name: "Valiz", type: "Kişisel Eşya" }
-  ],
-  "Araç Eşyaları": [
-    { name: "Araba", type: "Araç" }, { name: "Motosiklet", type: "Araç" }, { name: "Bisiklet", type: "Araç" }
-  ],
-  "Diğer": [{ name: "Özel Eşya", type: "Diğer" }]
-};
-
-const COLOR_OPTIONS = ["Siyah","Beyaz","Gri","Gümüş","Altın","Mavi","Kırmızı","Yeşil","Sarı","Mor","Pembe","Turuncu","Kahverengi","Şeffaf"];
-const COLOR_HEX = {
-  "Siyah":"#232323","Beyaz":"#f2f2f2","Gri":"#7c7c7c","Gümüş":"#b7bcc5","Altın":"#d4af37",
-  "Mavi":"#3b82f6","Kırmızı":"#ef4444","Yeşil":"#22c55e","Sarı":"#eab308","Mor":"#a855f7",
-  "Pembe":"#ec4899","Turuncu":"#f97316","Kahverengi":"#8b5e3c","Şeffaf":"#94a3b8"
-};
-
-const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", default:"📦" };
-
-const starter = [
-  { id:"1", name:"Evim", subs:[
-    { id:"s1", name:"Salon", items:[
-      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Apple", model:"iPhone 15 Pro", color:"Siyah", x:50, y:18, docs:[{id:"d1",name:"Fatura.pdf",type:"Fatura"}] },
-      { id:"i2", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"Samsung", model:"S24", color:"Mavi", x:50, y:54, docs:[] }
-    ] }
-  ] }
-];
-
-function mkid(){ return Math.random().toString(36).slice(2,10); }
-function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
-function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"", color:"", invoiceFiles:[] }; }
-
-function detectIcon(name="", type=""){
-  const t=(name+" "+type).toLowerCase();
-  if(t.includes("telev")) return "tv";
-  if(t.includes("koltuk")||t.includes("kanepe")) return "sofa";
-  if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return "lamp";
-  if(t.includes("buzdol")) return "fridge";
-  if(t.includes("laptop")||t.includes("bilgisayar")) return "laptop";
-  if(t.includes("yatak")) return "bed";
-  if(t.includes("telefon")) return "phone";
-  if(t.includes("araba")) return "car";
-  if(t.includes("bisiklet")) return "bike";
-  if(t.includes("masa")||t.includes("sandalye")) return "table";
-  if(t.includes("monit")) return "monitor";
-  if(t.includes("hoparl")||t.includes("kulaklık")) return "speaker";
-  if(t.includes("klima")) return "ac";
-  if(t.includes("çamaşır")) return "washer";
-  if(t.includes("kahve")) return "coffee";
-  if(t.includes("mikrodalga")) return "microwave";
-  if(t.includes("fırın")||t.includes("airfryer")||t.includes("tost")) return "oven";
-  if(t.includes("saat")) return "watch";
-  if(t.includes("çanta")||t.includes("valiz")) return "bag";
-  if(t.includes("gözlük")) return "glasses";
-  if(t.includes("cüzdan")) return "wallet";
-  if(t.includes("oyun")) return "game";
-  if(t.includes("modem")) return "modem";
-  return "box";
-}
-function detectSceneIcon(name=""){
-  const t=name.toLowerCase();
-  if(t.includes("ev")) return icons.home;
-  if(t.includes("iş")||t.includes("ofis")) return icons.office;
-  if(t.includes("mağaza")||t.includes("dükkan")||t.includes("salon")) return icons.shop;
-  if(t.includes("araç")||t.includes("garaj")) return icons.car;
-  return icons.default;
-}
-function defaultPos(index){
-  const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}];
-  return base[index] || {x:20+(index%3)*25,y:85};
-}
-function iconBg(color){ const c = COLOR_HEX[color] || "#475569"; return `linear-gradient(145deg, color-mix(in srgb, ${c} 30%, #fff) 0%, color-mix(in srgb, ${c} 72%, #111) 100%)`; }
-function iconBorder(color){ return COLOR_HEX[color] || "#333"; }
-
-
-function ProductGlyph({ kind, color }) {
-  const stroke = "rgba(255,255,255,.92)";
-  const fill = color || "#64748b";
-  const common = { fill:"none", stroke, strokeWidth:2.2, strokeLinecap:"round", strokeLinejoin:"round" };
-  switch(kind){
-    case "phone":
-      return <svg viewBox="0 0 64 64" width="42" height="42">
-        <rect x="20" y="8" width="24" height="48" rx="6" fill={fill} opacity=".28" stroke={stroke} strokeWidth="2.2"/>
-        <rect x="24" y="14" width="16" height="32" rx="2.5" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
-        <circle cx="32" cy="51" r="2" fill={stroke}/>
-      </svg>;
-    case "tv":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="11" y="13" width="42" height="27" rx="4" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M26 47h12M32 40v7" {...common}/>
-        <path d="M20 8l12 8 12-8" {...common}/>
-      </svg>;
-    case "laptop":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="16" y="14" width="32" height="22" rx="3.5" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M10 42h44l-4 6H14z" fill={fill} opacity=".28" stroke={stroke} strokeWidth="2.2"/>
-      </svg>;
-    case "fridge":
-      return <svg viewBox="0 0 64 64" width="42" height="42">
-        <rect x="20" y="8" width="24" height="48" rx="4" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M20 28h24" {...common}/>
-        <path d="M39 18v6M39 35v7" {...common}/>
-      </svg>;
-    case "sofa":
-      return <svg viewBox="0 0 64 64" width="46" height="46">
-        <path d="M16 30c0-6 4-10 10-10h12c6 0 10 4 10 10v12H16z" fill={fill} opacity=".26" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M12 28v16M52 28v16M12 44h40M18 44v6M46 44v6" {...common}/>
-      </svg>;
-    case "lamp":
-      return <svg viewBox="0 0 64 64" width="40" height="40">
-        <path d="M22 28h20L36 16H28z" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M32 28v18M22 50h20" {...common}/>
-      </svg>;
-    case "monitor":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="12" y="12" width="40" height="24" rx="3.5" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M32 36v8M24 48h16" {...common}/>
-      </svg>;
-    case "speaker":
-      return <svg viewBox="0 0 64 64" width="40" height="40">
-        <rect x="20" y="10" width="24" height="44" rx="5" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <circle cx="32" cy="24" r="5.5" {...common}/>
-        <circle cx="32" cy="40" r="9" {...common}/>
-      </svg>;
-    case "table":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <path d="M14 22h36v6H14z" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M18 28v20M46 28v20" {...common}/>
-      </svg>;
-    case "bed":
-      return <svg viewBox="0 0 64 64" width="46" height="46">
-        <path d="M12 26h40v18H12z" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M12 20h14v6H12zM12 44v6M52 44v6" {...common}/>
-      </svg>;
-    case "ac":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="10" y="16" width="44" height="14" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M18 36c3 2 3 6 0 8M30 36c3 2 3 6 0 8M42 36c3 2 3 6 0 8" {...common}/>
-      </svg>;
-    case "washer":
-      return <svg viewBox="0 0 64 64" width="42" height="42">
-        <rect x="16" y="10" width="32" height="44" rx="4" fill={fill} opacity=".23" stroke={stroke} strokeWidth="2.2"/>
-        <circle cx="32" cy="33" r="10" {...common}/>
-        <path d="M20 17h4M28 17h16" {...common}/>
-      </svg>;
-    case "coffee":
-      return <svg viewBox="0 0 64 64" width="40" height="40">
-        <path d="M18 24h22v16a8 8 0 0 1-8 8h-6a8 8 0 0 1-8-8z" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M40 28h6a4 4 0 0 1 0 8h-6M24 14c0 3-2 3-2 6M32 14c0 3-2 3-2 6" {...common}/>
-      </svg>;
-    case "microwave":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="10" y="18" width="44" height="26" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <rect x="16" y="24" width="22" height="14" rx="2" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
-        <path d="M45 25v2M45 31v2M45 37v2" {...common}/>
-      </svg>;
-    case "oven":
-      return <svg viewBox="0 0 64 64" width="44" height="44">
-        <rect x="16" y="12" width="32" height="40" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <rect x="22" y="26" width="20" height="16" rx="2" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
-        <path d="M22 18h3M29 18h3M36 18h3" {...common}/>
-      </svg>;
-    case "car":
-      return <svg viewBox="0 0 64 64" width="46" height="46">
-        <path d="M14 36l4-10h28l4 10v8H14z" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <circle cx="22" cy="46" r="4" fill={stroke}/>
-        <circle cx="42" cy="46" r="4" fill={stroke}/>
-        <path d="M22 26l5-8h10l5 8" {...common}/>
-      </svg>;
-    default:
-      return <svg viewBox="0 0 64 64" width="40" height="40">
-        <path d="M18 20l14-8 14 8v22l-14 8-14-8z" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
-        <path d="M18 20l14 8 14-8M32 28v22" {...common}/>
-      </svg>;
-  }
+const icons = {
+telefon:"📱",
+televizyon:"📺",
+laptop:"💻",
+koltuk:"🛋️",
+buzdolabı:"🧊",
+default:"📦"
 }
 
-function applyTheme(theme){
-  const root = document.documentElement;
-  Object.entries(theme).forEach(([k,v]) => {
-    if(k !== "name") root.style.setProperty(`--${k}`, v);
-  });
+function getIcon(name){
+const t=name.toLowerCase()
+if(t.includes("telefon")) return icons.telefon
+if(t.includes("telev")) return icons.televizyon
+if(t.includes("laptop")) return icons.laptop
+if(t.includes("koltuk")) return icons.koltuk
+if(t.includes("buz")) return icons.buzdolabı
+return icons.default
 }
 
-function Modal({ title, onClose, children }){ return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={(e)=>e.stopPropagation()}><div className="row" style={{marginBottom:16}}><h3>{title}</h3><button className="btn btn-dark" onClick={onClose}>Kapat</button></div>{children}</div></div>; }
-function TopBar({ title, sub, onBack, right }){ return <div className="topbar">{onBack&&<button className="btn btn-dark" onClick={onBack}>←</button>}<div style={{flex:1}}><div style={{fontSize:17,fontWeight:700}}>{title}</div>{sub&&<div className="muted" style={{marginTop:2}}>{sub}</div>}</div>{right}</div>; }
+export default function App(){
 
-function ItemForm({ form, setForm }){
-  const categoryOptions=Object.keys(ITEM_CATEGORIES);
-  const itemOptions=form.category?ITEM_CATEGORIES[form.category]:[];
-  function setField(key,value){ setForm(prev=>({ ...prev, [key]: value })); }
-  function handleCategoryChange(value){ setForm(prev=>({ ...prev, category:value, selectedName:"", customName:"", name:"", type:"" })); }
-  function handleItemSelect(value){
-    const found=(ITEM_CATEGORIES[form.category]||[]).find(x=>x.name===value);
-    if(value==="Özel Eşya"){ setForm(prev=>({ ...prev, selectedName:value, name:"", type:"Diğer" })); return; }
-    setForm(prev=>({ ...prev, selectedName:value, name:found?found.name:value, type:found?found.type:prev.type }));
-  }
-  function handleCustomName(value){ setForm(prev=>({ ...prev, customName:value, name:value })); }
-  function handleInvoiceFiles(e){
-    const files = Array.from(e.target.files || []).map(f => ({ id: mkid(), name: f.name, type: "Fatura" }));
-    setForm(prev => ({ ...prev, invoiceFiles: files }));
-  }
-  return <>
-    <div className="section" style={{marginBottom:10}}>
-      <div style={{fontWeight:700,marginBottom:10}}>Kategori ve Eşya Seçimi</div>
-      <div className="grid2">
-        <label><div className="muted" style={{marginBottom:4}}>Kategori</div><select value={form.category} onChange={e=>handleCategoryChange(e.target.value)}><option value="">Seçiniz</option>{categoryOptions.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
-        <label><div className="muted" style={{marginBottom:4}}>Eşya</div><select value={form.selectedName} onChange={e=>handleItemSelect(e.target.value)} disabled={!form.category}><option value="">Seçiniz</option>{itemOptions.map(i=><option key={i.name} value={i.name}>{i.name}</option>)}</select></label>
-      </div>
-      {form.selectedName==="Özel Eşya"&&<label><div className="muted" style={{marginBottom:4}}>Özel Eşya Adı</div><input value={form.customName} onChange={e=>handleCustomName(e.target.value)} placeholder="Listede olmayan eşya adı" /></label>}
-    </div>
-    <div className="grid2">
-      <label><div className="muted" style={{marginBottom:4}}>Eşya Adı</div><input value={form.name} readOnly /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} readOnly /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Renk</div><select value={form.color} onChange={e=>setField("color",e.target.value)}><option value="">Seçiniz</option>{COLOR_OPTIONS.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
-    </div>
-    <div className="section" style={{marginTop:10}}>
-      <div style={{fontWeight:700,marginBottom:8}}>Fatura Ekle</div>
-      <label>
-        <div className="muted" style={{marginBottom:4}}>Fatura Dosyaları</div>
-        <input type="file" multiple onChange={handleInvoiceFiles} />
-      </label>
-      <div>
-        {(form.invoiceFiles || []).map(f => <span key={f.id} className="doc-pill">{f.name}</span>)}
-      </div>
-    </div>
-  </>;
+const [view,setView]=useState("home")
+const [items,setItems]=useState([
+{id:"1",name:"Telefon",model:"iPhone 15",color:"#3b82f6",x:50,y:30},
+{id:"2",name:"Telefon",model:"S24",color:"#ef4444",x:60,y:60}
+])
+
+function move(id,x,y){
+setItems(prev=>prev.map(i=>i.id===id?{...i,x,y}:i))
 }
 
-function App(){
-  const [themeKey, setThemeKey] = useState("royal");
-  const [scenes,setScenes]=useState(starter);
-  const [view,setView]=useState("home");
-  const [activeSceneId,setActiveSceneId]=useState("");
-  const [activeRoomId,setActiveRoomId]=useState("");
-  const [activeItemId,setActiveItemId]=useState("");
-  const [modal,setModal]=useState(null);
-  const [sceneName,setSceneName]=useState("");
-  const [roomName,setRoomName]=useState("");
-  const [itemForm,setItemForm]=useState(emptyItemForm());
-  const [editForm,setEditForm]=useState(emptyItemForm());
-  const [draggingId,setDraggingId]=useState(null);
-  const sceneRef=useRef(null);
+return(
+<div>
 
-  React.useEffect(() => { applyTheme(THEMES[themeKey]); }, [themeKey]);
+{view==="home"&&(
+<div>
+<div className="top">
+<div>Eşyamın Hayatı</div>
+<button onClick={()=>setView("room")}>Gir</button>
+</div>
+</div>
+)}
 
-  const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
-  const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
-  const totalValue=useMemo(()=>allItems.reduce((a,i)=>a+(parseFloat(i.purchasePrice)||0),0).toLocaleString("tr-TR"),[allItems]);
-  const activeRoom=useMemo(()=>activeScene?activeScene.subs.find(r=>r.id===activeRoomId)||null:null,[activeScene,activeRoomId]);
-  const activeItem=useMemo(()=>activeRoom?activeRoom.items.find(i=>i.id===activeItemId)||null:null,[activeRoom,activeItemId]);
+{view==="room"&&(
+<div className="scene"
+onMouseMove={(e)=>{
+if(!window.drag) return
+const rect=e.currentTarget.getBoundingClientRect()
+let x=((e.clientX-rect.left)/rect.width)*100
+let y=((e.clientY-rect.top)/rect.height)*100
+move(window.drag,x,y)
+}}
+onMouseUp={()=>window.drag=null}
+>
 
-  function goScene(id){ setActiveSceneId(id); setView("scene"); }
-  function goRoom(id){ setActiveRoomId(id); setView("room"); }
-  function goItem(id){ setActiveItemId(id); setView("item"); }
-  function addScene(){ if(!sceneName.trim()) return; const next={id:mkid(),name:sceneName.trim(),subs:[]}; setScenes(prev=>[...prev,next]); setSceneName(""); setModal(null); }
-  function addRoom(){ if(!roomName.trim()||!activeSceneId) return; const next={id:mkid(),name:roomName.trim(),items:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:[...s.subs,next]}:s)); setRoomName(""); setModal(null); }
-  function addItem(){
-    if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return;
-    const pos = activeRoom ? defaultPos(activeRoom.items.length) : {x:50,y:50};
-    const next={id:mkid(), ...itemForm, x:pos.x, y:pos.y, docs:[...(itemForm.invoiceFiles||[])]};
-    setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:[...r.items,next]}:r)}:s));
-    setItemForm(emptyItemForm());
-    setModal(null);
-  }
-  function updateItem(itemId, updater){
-    setScenes(prev=>prev.map(s=>s.id===activeSceneId?{
-      ...s,
-      subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:r.items.map(i=>i.id===itemId?updater(i):i)}:r)
-    }:s));
-  }
-  function saveEdit(){
-    if(!activeItem || !editForm.name.trim()) return;
-    const mergedDocs = [...(activeItem.docs || [])];
-    (editForm.invoiceFiles || []).forEach(f => mergedDocs.push(f));
-    updateItem(activeItem.id, i => ({ ...i, ...editForm, docs: mergedDocs }));
-    setModal(null);
-  }
+{items.map(i=>(
+<div
+key={i.id}
+className="item"
+style={{left:i.x+"%",top:i.y+"%"}}
+onMouseDown={()=>window.drag=i.id}
+>
 
-  function startDrag(itemId, e){ e.preventDefault(); e.stopPropagation(); setDraggingId(itemId); }
-  function moveDrag(e){
-    if(!draggingId || !sceneRef.current) return;
-    const rect = sceneRef.current.getBoundingClientRect();
-    const point = e.touches ? e.touches[0] : e;
-    let x = ((point.clientX - rect.left) / rect.width) * 100;
-    let y = ((point.clientY - rect.top) / rect.height) * 100;
-    x = Math.max(8, Math.min(92, x));
-    y = Math.max(12, Math.min(88, y));
-    updateItem(draggingId, i => ({ ...i, x, y }));
-  }
-  function endDrag(){ setDraggingId(null); }
+<div style={{
+fontSize:44,
+color:i.color
+}}>
+{getIcon(i.name)}
+</div>
 
-  return <div className="app">
-    {view==="home" && <>
-      <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
-      <div className="container">
-        <div className="hero-banner">
-          <div className="row">
-            <div>
-              <div style={{fontSize:18, fontWeight:700}}>Renk Teması</div>
-              <div className="muted" style={{marginTop:4}}>Uygulamanın genel görünümünü değiştir</div>
-            </div>
-          </div>
-          <div className="theme-row">
-            {Object.entries(THEMES).map(([key, theme]) => (
-              <div
-                key={key}
-                className={`theme-chip ${themeKey===key ? 'active' : ''}`}
-                style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent2})` }}
-                title={theme.name}
-                onClick={()=>setThemeKey(key)}
-              />
-            ))}
-          </div>
-        </div>
+<div className="name">{i.name}</div>
+<div className="model">{i.model}</div>
 
-        {scenes.map(s=><div key={s.id} className="hero-banner" onClick={()=>goScene(s.id)} style={{cursor:"pointer"}}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}
-      </div>
-      {modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}
-    </>}
+</div>
+))}
 
-    {view==="scene"&&activeScene && <>
-      <TopBar title={activeScene.name} sub="Başlık paneli" onBack={()=>setView("home")} right={<button className="btn btn-primary" onClick={()=>setModal("room")}>+ Alt Başlık</button>} />
-      <div className="container">
-        {activeScene.subs.map(r=><div key={r.id} className="card" onClick={()=>goRoom(r.id)}><div className="row"><div><div style={{fontSize:16,fontWeight:700}}>{r.name}</div><div className="muted">{r.items.length} eşya</div></div><div>›</div></div></div>)}
-      </div>
-      {modal==="room"&&<Modal title="Yeni Alt Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div><input value={roomName} onChange={e=>setRoomName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button></Modal>}
-    </>}
+</div>
+)}
 
-    {view==="room"&&activeRoom && <>
-      <TopBar title={activeRoom.name} sub="Tam sayfa görünüm · sürükle / çift tıkla detay" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
-      <div
-        className="scene-page"
-        ref={sceneRef}
-        onMouseMove={moveDrag}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        onTouchMove={moveDrag}
-        onTouchEnd={endDrag}
-      >
-        <div className="scene-grid"></div>
-        <div className="scene-frame"></div>
-        <div className="room-label">{activeRoom.name}</div>
-        {activeRoom.items.map((item, index)=>{
-          const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
-          const col = COLOR_HEX[item.color] || "#64748b";
-          return <div
-            key={item.id}
-            className={`item-node ${draggingId===item.id ? "dragging" : ""}`}
-            style={{left:`${pos.x}%`, top:`${pos.y}%`, ['--itemColor']: col}}
-            onMouseDown={(e)=>startDrag(item.id, e)}
-            onTouchStart={(e)=>startDrag(item.id, e)}
-            onDoubleClick={()=>goItem(item.id)}
-          >
-            <div className="icon-wrap">
-              <div className="color-dot"></div>
-              <div className="icon-core"><ProductGlyph kind={detectIcon(item.name,item.type)} color={col} /></div>
-            </div>
-            <div className="item-name">{item.name}</div>
-            {item.model && <div className="item-model">{item.model}</div>}
-            {item.color && <div className="item-color">{item.color}</div>}
-          </div>;
-        })}
-        {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
-      </div>
-      {modal==="item"&&<Modal title="Yeni Eşya" onClose={()=>setModal(null)}><ItemForm form={itemForm} setForm={setItemForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={addItem}>Kaydet</button></Modal>}
-    </>}
-
-    {view==="item"&&activeItem && <>
-      <TopBar
-        title={activeItem.name}
-        sub="Eşyanın hayatı"
-        onBack={()=>setView("room")}
-        right={<button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name, invoiceFiles:[]}); setModal("edit"); }}>Düzenle</button>}
-      />
-      <div className="container">
-        <div className="card" style={{cursor:"default"}}>
-          <div style={{display:"flex", justifyContent:"center", marginBottom:12}}>
-            <div style={{'--itemColor': COLOR_HEX[activeItem.color] || '#64748b'}} className="icon-wrap">
-              <div className="color-dot"></div>
-              <div className="icon-core"><ProductGlyph kind={detectIcon(activeItem.name,activeItem.type)} color={COLOR_HEX[activeItem.color] || "#64748b"} /></div>
-            </div>
-          </div>
-          <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>
-          {activeItem.model && <div className="muted" style={{marginTop:4}}>{activeItem.model}</div>}
-          {activeItem.color && <div className="muted" style={{marginTop:4}}>Renk: {activeItem.color}</div>}
-          <div className="muted" style={{marginTop:4}}>{activeItem.category}</div>
-        </div>
-        <div className="grid2">
-          <div className="mini"><div className="muted">Marka</div><div>{activeItem.brand || "-"}</div></div>
-          <div className="mini"><div className="muted">Model</div><div>{activeItem.model || "-"}</div></div>
-          <div className="mini"><div className="muted">Renk</div><div>{activeItem.color || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Tarihi</div><div>{activeItem.acquisitionDate || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Değeri</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>
-        </div>
-        <div className="section">
-          <div style={{fontWeight:700,marginBottom:8}}>Belgeler</div>
-          {(activeItem.docs || []).length === 0 && <div className="muted">Belge yok</div>}
-          {(activeItem.docs || []).map(d => <span key={d.id} className="doc-pill">{d.type}: {d.name}</span>)}
-        </div>
-      </div>
-      {modal==="edit"&&<Modal title="Eşyayı Düzenle" onClose={()=>setModal(null)}><ItemForm form={editForm} setForm={setEditForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={saveEdit}>Güncelle</button></Modal>}
-    </>}
-  </div>;
+</div>
+)
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>)
+
 </script>
 </body>
 </html>

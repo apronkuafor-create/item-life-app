@@ -4,363 +4,479 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eşyanın Hayatı</title>
-
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <style>
-    body { margin:0; background:#0a0a0c; color:#fff; font-family: Arial, sans-serif; }
-    button { cursor:pointer; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #0a0a0c; color: #fff; }
+    .topbar { padding: 14px 16px; border-bottom: 1px solid #1a1a1e; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:#0a0a0c; }
+    .container { padding: 16px; }
+    .card { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:10px; cursor:pointer; }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
+    .btn-primary { background:#6366f1; color:#fff; }
+    .btn-dark { background:#141416; color:#fff; border:1px solid #2a2a2a; }
+    .btn-danger { background:#dc2626; color:#fff; }
+    .muted { color:#888; font-size:12px; }
+    .scene { position:relative; height:55vh; min-height:360px; background:#161616; border-top:1px solid #1a1a1e; }
+    .room-label { position:absolute; top:10px; left:12px; background:rgba(0,0,0,.55); padding:5px 12px; border-radius:8px; font-size:13px; font-weight:700; }
+    .item-node { position:absolute; transform:translate(-50%,-50%); cursor:pointer; text-align:center; }
+    .icon { width:64px; height:64px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border:1px solid #333; border-radius:18px; font-size:28px; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+    .item-name { margin-top:6px; font-size:11px; color:rgba(255,255,255,.8); background:rgba(0,0,0,.7); padding:2px 8px; border-radius:6px; display:inline-block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .mini { background:#141416; border:1px solid #1e1e22; border-radius:12px; padding:12px 14px; }
+    .timeline { padding-bottom:12px; position:relative; display:flex; gap:10px; }
+    .dot { width:8px; height:8px; border-radius:99px; margin-top:4px; background:#6366f1; flex-shrink:0; }
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; padding:16px; z-index:999; }
+    .modal { width:100%; max-width:420px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
+    input, select { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
+    label { display:block; margin-bottom:10px; }
+    h1,h2,h3,p { margin:0; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
 
-  <script type="text/babel">
-    const { useState } = React;
+<script type="text/babel">
+const { useMemo, useState } = React;
 
-    const IconWrap = ({ children, size = 18 }) => (
-      <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:size, height:size, fontSize:size-2, lineHeight:1 }}>
+const icons = {
+  home: "🏠",
+  car: "🚗",
+  box: "📦",
+  tv: "📺",
+  sofa: "🛋️",
+  lamp: "💡",
+  fridge: "🧊",
+  laptop: "💻",
+  bed: "🛏️",
+  phone: "📱",
+  default: "📦",
+};
+
+const starter = [
+  {
+    id: "1",
+    name: "Evim",
+    subs: [
+      {
+        id: "s1",
+        name: "Salon",
+        items: [
+          {
+            id: "i1",
+            name: "Televizyon",
+            type: "Elektronik",
+            acquisitionType: "Satın alındı",
+            acquisitionDate: "2026-04-12",
+            status: "Kullanımda",
+            brand: "Samsung",
+            model: "QLED 65",
+            identifier: "SN-10023",
+            owner: "Benim",
+            location: "Salon",
+            value: "45000",
+            events: [{ id: "e1", date: "12.04.2026", text: "Sisteme eklendi" }],
+            docs: [{ id: "d1", name: "Fatura.pdf", type: "Fatura" }]
+          },
+          {
+            id: "i2",
+            name: "Koltuk Takımı",
+            type: "Mobilya",
+            acquisitionType: "Satın alındı",
+            acquisitionDate: "2026-03-10",
+            status: "Kullanımda",
+            brand: "İstikbal",
+            model: "L Koltuk",
+            identifier: "",
+            owner: "",
+            location: "Salon",
+            value: "32000",
+            events: [{ id: "e2", date: "10.03.2026", text: "Eklendi" }],
+            docs: []
+          }
+        ]
+      }
+    ]
+  }
+];
+
+const mkid = () => Math.random().toString(36).slice(2, 10);
+const tdy = () => new Date().toLocaleDateString("tr-TR");
+
+function detectIcon(name = "", type = "") {
+  const t = `${name} ${type}`.toLowerCase();
+  if (t.includes("telev")) return icons.tv;
+  if (t.includes("koltuk") || t.includes("kanepe")) return icons.sofa;
+  if (t.includes("abajur") || t.includes("lamba")) return icons.lamp;
+  if (t.includes("buzdol")) return icons.fridge;
+  if (t.includes("laptop") || t.includes("bilgisayar")) return icons.laptop;
+  if (t.includes("yatak")) return icons.bed;
+  if (t.includes("telefon")) return icons.phone;
+  if (t.includes("araba") || t.includes("araç")) return icons.car;
+  return icons.default;
+}
+
+function positions(items) {
+  const base = [
+    { x: 50, y: 18 },
+    { x: 50, y: 55 },
+    { x: 18, y: 35 },
+    { x: 82, y: 35 },
+    { x: 18, y: 70 },
+    { x: 82, y: 70 },
+    { x: 35, y: 82 },
+    { x: 65, y: 82 },
+  ];
+  return items.map((item, i) => ({ item, ...(base[i] || { x: 20 + (i%3)*25, y: 85 }) }));
+}
+
+function Modal({ title, onClose, children }) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e)=>e.stopPropagation()}>
+        <div className="row" style={{marginBottom:16}}>
+          <h3>{title}</h3>
+          <button className="btn btn-dark" onClick={onClose}>Kapat</button>
+        </div>
         {children}
-      </span>
-    );
-    const Home = ({ size=18 }) => <IconWrap size={size}>🏠</IconWrap>;
-    const Car = ({ size=18 }) => <IconWrap size={size}>🚗</IconWrap>;
-    const Boxes = ({ size=18 }) => <IconWrap size={size}>📦</IconWrap>;
-    const Plus = ({ size=18 }) => <IconWrap size={size}>＋</IconWrap>;
-    const ChevronRight = ({ size=18 }) => <IconWrap size={size}>›</IconWrap>;
-    const FileText = ({ size=18 }) => <IconWrap size={size}>📄</IconWrap>;
-    const Clock3 = ({ size=18 }) => <IconWrap size={size}>🕘</IconWrap>;
-    const X = ({ size=18 }) => <IconWrap size={size}>✕</IconWrap>;
-    const Trash2 = ({ size=18 }) => <IconWrap size={size}>🗑️</IconWrap>;
-    const Edit3 = ({ size=18 }) => <IconWrap size={size}>✎</IconWrap>;
-    const ArrowLeft = ({ size=18 }) => <IconWrap size={size}>←</IconWrap>;
-    const Package = ({ size=18 }) => <IconWrap size={size}>📦</IconWrap>;
-    const AlertCircle = ({ size=18 }) => <IconWrap size={size}>⚠️</IconWrap>;
-    const Folder = ({ size=18 }) => <IconWrap size={size}>📁</IconWrap>;
-    const Sparkles = ({ size=18 }) => <IconWrap size={size}>✨</IconWrap>;
-    const Check = ({ size=18 }) => <IconWrap size={size}>✓</IconWrap>;
-    const Zap = ({ size=18 }) => <IconWrap size={size}>⚡</IconWrap>;
+      </div>
+    </div>
+  );
+}
 
-    function App() {
-      const [scenes, setScenes] = useState([
-        {
-          id: '1',
-          name: 'Evim',
-          icon: 'Home',
-          rooms: [
-            {
-              id: 'r1',
-              name: 'Salon',
-              items: [
-                {
-                  id: 'i1',
-                  name: 'Televizyon',
-                  brand: 'Samsung',
-                  model: 'QLED 65',
-                  status: 'Kullanımda',
-                  acquisitionDate: '2026-04-12',
-                  value: '45000',
-                  docs: [{ id:'d1', name:'Fatura.pdf', type:'Fatura' }],
-                  events: [{ id:'e1', date:'12.04.2026', text:'Sisteme eklendi' }]
-                },
-                {
-                  id: 'i2',
-                  name: 'Koltuk Takımı',
-                  brand: 'İstikbal',
-                  model: 'L Koltuk',
-                  status: 'Kullanımda',
-                  acquisitionDate: '2026-03-10',
-                  value: '32000',
-                  docs: [],
-                  events: [{ id:'e2', date:'10.03.2026', text:'Sisteme eklendi' }]
-                }
-              ]
-            }
-          ]
-        }
-      ]);
+function TopBar({ title, sub, onBack, right }) {
+  return (
+    <div className="topbar">
+      {onBack && <button className="btn btn-dark" onClick={onBack}>←</button>}
+      <div style={{flex:1}}>
+        <div style={{fontSize:17, fontWeight:700}}>{title}</div>
+        {sub && <div className="muted" style={{marginTop:2}}>{sub}</div>}
+      </div>
+      {right}
+    </div>
+  );
+}
 
-      const [page, setPage] = useState('home');
-      const [sceneId, setSceneId] = useState(null);
-      const [roomId, setRoomId] = useState(null);
-      const [itemId, setItemId] = useState(null);
-      const [modal, setModal] = useState(null);
-      const [text, setText] = useState('');
-      const [docName, setDocName] = useState('');
-      const [docType, setDocType] = useState('');
-      const [eventText, setEventText] = useState('');
-      const [eventDate, setEventDate] = useState(new Date().toLocaleDateString('tr-TR'));
+function App() {
+  const [scenes, setScenes] = useState(starter);
+  const [view, setView] = useState("home");
+  const [activeSceneId, setActiveSceneId] = useState("");
+  const [activeRoomId, setActiveRoomId] = useState("");
+  const [activeItemId, setActiveItemId] = useState("");
+  const [modal, setModal] = useState(null);
 
-      const activeScene = scenes.find(s => s.id === sceneId) || null;
-      const activeRoom = activeScene?.rooms.find(r => r.id === roomId) || null;
-      const activeItem = activeRoom?.items.find(i => i.id === itemId) || null;
+  const [sceneName, setSceneName] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [quickItemName, setQuickItemName] = useState("");
+  const [eventDate, setEventDate] = useState(tdy());
+  const [eventText, setEventText] = useState("");
+  const [docName, setDocName] = useState("");
+  const [docType, setDocType] = useState("");
 
-      const totalValue = scenes.flatMap(s => s.rooms).flatMap(r => r.items)
-        .reduce((a, i) => a + (parseFloat(i.value || '0') || 0), 0)
-        .toLocaleString('tr-TR');
+  const activeScene = useMemo(() => scenes.find(s => s.id === activeSceneId) || null, [scenes, activeSceneId]);
+  const allItems = useMemo(() => scenes.flatMap(s => s.subs.flatMap(r => r.items)), [scenes]);
+  const totalValue = useMemo(() => allItems.reduce((a, i) => a + (parseFloat(i.value) || 0), 0).toLocaleString("tr-TR"), [allItems]);
+  const activeRoom = useMemo(() => activeScene ? activeScene.subs.find(r => r.id === activeRoomId) || null : null, [activeScene, activeRoomId]);
+  const activeItem = useMemo(() => activeRoom ? activeRoom.items.find(i => i.id === activeItemId) || null : null, [activeRoom, activeItemId]);
 
-      const addScene = () => {
-        if (!text.trim()) return;
-        const id = Date.now().toString();
-        setScenes(prev => [...prev, { id, name: text.trim(), icon: 'Boxes', rooms: [] }]);
-        setText('');
-        setModal(null);
-      };
+  function goScene(id) { setActiveSceneId(id); setView("scene"); }
+  function goRoom(id) { setActiveRoomId(id); setActiveItemId(""); setView("room"); }
+  function goItem(id) { setActiveItemId(id); setView("item"); }
 
-      const addRoom = () => {
-        if (!text.trim() || !activeScene) return;
-        const id = Date.now().toString();
-        setScenes(prev => prev.map(s => s.id === activeScene.id ? { ...s, rooms: [...s.rooms, { id, name: text.trim(), items: [] }] } : s));
-        setText('');
-        setModal(null);
-      };
+  function addScene() {
+    if (!sceneName.trim()) return;
+    const next = { id: mkid(), name: sceneName.trim(), subs: [] };
+    setScenes(prev => [...prev, next]);
+    setSceneName("");
+    setModal(null);
+    setActiveSceneId(next.id);
+    setView("scene");
+  }
 
-      const quickAddItem = () => {
-        if (!text.trim() || !activeScene || !activeRoom) return;
-        const id = Date.now().toString();
-        const item = {
-          id,
-          name: text.trim(),
-          brand: '',
-          model: '',
-          status: 'Kullanımda',
-          acquisitionDate: new Date().toLocaleDateString('tr-TR'),
-          value: '',
-          docs: [],
-          events: [{ id: 'e'+id, date: new Date().toLocaleDateString('tr-TR'), text: 'Sisteme eklendi' }]
-        };
-        setScenes(prev => prev.map(s => s.id === activeScene.id ? {
-          ...s,
-          rooms: s.rooms.map(r => r.id === activeRoom.id ? { ...r, items: [...r.items, item] } : r)
-        } : s));
-        setText('');
-        setModal(null);
-      };
+  function addRoom() {
+    if (!roomName.trim() || !activeSceneId) return;
+    const next = { id: mkid(), name: roomName.trim(), items: [] };
+    setScenes(prev => prev.map(s => s.id === activeSceneId ? { ...s, subs: [...s.subs, next] } : s));
+    setRoomName("");
+    setModal(null);
+    setActiveRoomId(next.id);
+    setView("room");
+  }
 
-      const addDoc = () => {
-        if (!activeItem || !docName.trim() || !docType.trim()) return;
-        setScenes(prev => prev.map(s => s.id === activeScene.id ? {
-          ...s,
-          rooms: s.rooms.map(r => r.id === activeRoom.id ? {
-            ...r,
-            items: r.items.map(i => i.id === activeItem.id ? { ...i, docs: [...i.docs, { id: Date.now().toString(), name: docName.trim(), type: docType.trim() }] } : i)
-          } : r)
-        } : s));
-        setDocName('');
-        setDocType('');
-        setModal(null);
-      };
+  function addQuickItem() {
+    if (!quickItemName.trim() || !activeSceneId || !activeRoomId) return;
+    const next = {
+      id: mkid(),
+      name: quickItemName.trim(),
+      type: "",
+      acquisitionType: "",
+      acquisitionDate: tdy(),
+      status: "Kullanımda",
+      brand: "",
+      model: "",
+      identifier: "",
+      owner: "",
+      location: activeRoom ? activeRoom.name : "",
+      value: "",
+      events: [{ id: mkid(), date: tdy(), text: "Sisteme eklendi" }],
+      docs: []
+    };
+    setScenes(prev => prev.map(s => s.id === activeSceneId ? {
+      ...s,
+      subs: s.subs.map(r => r.id === activeRoomId ? { ...r, items: [...r.items, next] } : r)
+    } : s));
+    setQuickItemName("");
+    setModal(null);
+    setActiveItemId(next.id);
+    setView("item");
+  }
 
-      const addEvent = () => {
-        if (!activeItem || !eventText.trim()) return;
-        setScenes(prev => prev.map(s => s.id === activeScene.id ? {
-          ...s,
-          rooms: s.rooms.map(r => r.id === activeRoom.id ? {
-            ...r,
-            items: r.items.map(i => i.id === activeItem.id ? { ...i, events: [{ id: Date.now().toString(), date: eventDate, text: eventText.trim() }, ...i.events] } : i)
-          } : r)
-        } : s));
-        setEventText('');
-        setModal(null);
-      };
+  function updateItem(itemId, updater) {
+    setScenes(prev => prev.map(s => s.id === activeSceneId ? {
+      ...s,
+      subs: s.subs.map(r => ({ ...r, items: r.items.map(i => i.id === itemId ? updater(i) : i) }))
+    } : s));
+  }
 
-      const headerBtn = (label, onClick, bg = '#6366f1', color = '#fff') => (
-        <button onClick={onClick} style={{ padding:'8px 12px', borderRadius:10, border:'none', background:bg, color, fontWeight:700 }}>{label}</button>
-      );
+  function addEvent() {
+    if (!activeItem || !eventText.trim()) return;
+    updateItem(activeItem.id, i => ({ ...i, events: [{ id: mkid(), date: eventDate, text: eventText.trim() }, ...i.events] }));
+    setEventText("");
+    setEventDate(tdy());
+    setModal(null);
+  }
 
-      if (page === 'home') {
-        return (
-          <div style={{ minHeight:'100vh', padding:16 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-              <div>
-                <div style={{ fontSize:24, fontWeight:800 }}>Eşyanın Hayatı</div>
-                <div style={{ color:'#888', fontSize:13 }}>Toplam değer ₺{totalValue}</div>
-              </div>
-              {headerBtn('Başlık Ekle', () => setModal('scene'))}
-            </div>
+  function addDoc() {
+    if (!activeItem || !docName.trim() || !docType.trim()) return;
+    updateItem(activeItem.id, i => ({ ...i, docs: [...i.docs, { id: mkid(), name: docName.trim(), type: docType.trim() }] }));
+    setDocName("");
+    setDocType("");
+    setModal(null);
+  }
 
-            {scenes.map(scene => (
-              <button key={scene.id} onClick={() => { setSceneId(scene.id); setPage('scene'); }} style={{ width:'100%', textAlign:'left', background:'#141416', border:'1px solid #222', color:'#fff', borderRadius:16, padding:16, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <div>
-                  <div style={{ fontSize:17, fontWeight:700 }}>{scene.name}</div>
-                  <div style={{ fontSize:12, color:'#777', marginTop:4 }}>{scene.rooms.length} oda</div>
-                </div>
-                <ChevronRight />
-              </button>
-            ))}
-
-            {modal === 'scene' && (
-              <Modal title="Yeni Başlık" onClose={() => setModal(null)}>
-                <input value={text} onChange={e => setText(e.target.value)} placeholder="Evim, İş Yerim..." style={inputStyle} />
-                <button onClick={addScene} style={primaryBtn}>Oluştur</button>
-              </Modal>
-            )}
-          </div>
-        );
-      }
-
-      if (page === 'scene' && activeScene) {
-        return (
-          <div style={{ minHeight:'100vh', padding:16 }}>
-            <Top title={activeScene.name} onBack={() => setPage('home')} right={headerBtn('Oda Ekle', () => setModal('room'))} />
-            <div style={{ marginTop:16 }}>
-              {activeScene.rooms.map(room => (
-                <button key={room.id} onClick={() => { setRoomId(room.id); setPage('room'); }} style={{ width:'100%', textAlign:'left', background:'#141416', border:'1px solid #222', color:'#fff', borderRadius:16, padding:16, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+  if (view === "home") {
+    return (
+      <div>
+        <TopBar
+          title="Eşyanın Hayatı"
+          sub={`${allItems.length} eşya · ₺${totalValue}`}
+          right={<button className="btn btn-primary" onClick={() => setModal("scene")}>+ Başlık</button>}
+        />
+        <div className="container">
+          {scenes.map(s => {
+            const count = s.subs.reduce((a, r) => a + r.items.length, 0);
+            return (
+              <div key={s.id} className="card" onClick={() => goScene(s.id)}>
+                <div className="row">
                   <div>
-                    <div style={{ fontSize:17, fontWeight:700 }}>{room.name}</div>
-                    <div style={{ fontSize:12, color:'#777', marginTop:4 }}>{room.items.length} eşya</div>
+                    <div style={{fontSize:16, fontWeight:700}}>{s.name}</div>
+                    <div className="muted" style={{marginTop:4}}>{s.subs.length} oda · {count} eşya</div>
                   </div>
-                  <ChevronRight />
-                </button>
-              ))}
-            </div>
-
-            {modal === 'room' && (
-              <Modal title="Yeni Oda" onClose={() => setModal(null)}>
-                <input value={text} onChange={e => setText(e.target.value)} placeholder="Salon, Mutfak..." style={inputStyle} />
-                <button onClick={addRoom} style={primaryBtn}>Ekle</button>
-              </Modal>
-            )}
-          </div>
-        );
-      }
-
-      if (page === 'room' && activeRoom) {
-        return (
-          <div style={{ minHeight:'100vh', padding:16 }}>
-            <Top title={activeRoom.name} onBack={() => setPage('scene')} right={headerBtn('Eşya Ekle', () => setModal('quick'))} />
-            <div style={{ marginTop:16, background:'#141416', border:'1px solid #222', borderRadius:20, padding:16, minHeight:300 }}>
-              <div style={{ color:'#777', fontSize:13, marginBottom:12 }}>Oda sahnesi</div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:12 }}>
-                {activeRoom.items.map(item => (
-                  <button key={item.id} onClick={() => { setItemId(item.id); setPage('item'); }} style={{ background:'#0a0a0c', border:'1px solid #2a2a2a', color:'#fff', borderRadius:14, padding:16, textAlign:'left' }}>
-                    <div style={{ fontWeight:700 }}>{item.name}</div>
-                    <div style={{ color:'#777', fontSize:12, marginTop:4 }}>{item.status}</div>
-                  </button>
-                ))}
+                  <div style={{fontSize:18}}>›</div>
+                </div>
               </div>
-              {!activeRoom.items.length && <div style={{ color:'#555', paddingTop:40, textAlign:'center' }}>Henüz eşya yok</div>}
-            </div>
+            );
+          })}
+        </div>
+        {modal === "scene" && (
+          <Modal title="Yeni Başlık" onClose={() => setModal(null)}>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Başlık Adı</div>
+              <input value={sceneName} onChange={e => setSceneName(e.target.value)} placeholder="Evim, İş Yerim..." />
+            </label>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button>
+          </Modal>
+        )}
+      </div>
+    );
+  }
 
-            {modal === 'quick' && (
-              <Modal title="Hızlı Eşya Ekle" onClose={() => setModal(null)}>
-                <input value={text} onChange={e => setText(e.target.value)} placeholder="Televizyon, Koltuk..." style={inputStyle} />
-                <button onClick={quickAddItem} style={primaryBtn}>Odaya Ekle</button>
-              </Modal>
-            )}
-          </div>
-        );
-      }
-
-      if (page === 'item' && activeItem) {
-        return (
-          <div style={{ minHeight:'100vh', padding:16 }}>
-            <Top title={activeItem.name} onBack={() => setPage('room')} right={<div style={{ display:'flex', gap:8 }}>{headerBtn('Belge', () => setModal('doc'), '#1f2937');}{headerBtn('Olay', () => setModal('event'))}</div>} />
-            <div style={{ marginTop:16, background:'#141416', border:'1px solid #222', borderRadius:20, padding:16 }}>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-                <Info label="Marka" value={activeItem.brand || '-'} />
-                <Info label="Model" value={activeItem.model || '-'} />
-                <Info label="Durum" value={activeItem.status || '-'} />
-                <Info label="Tarih" value={activeItem.acquisitionDate || '-'} />
+  if (view === "scene" && activeScene) {
+    return (
+      <div>
+        <TopBar
+          title={activeScene.name}
+          sub={`${activeScene.subs.reduce((a,r)=>a+r.items.length,0)} eşya`}
+          onBack={() => setView("home")}
+          right={<button className="btn btn-primary" onClick={() => setModal("room")}>+ Oda</button>}
+        />
+        <div className="container">
+          {activeScene.subs.length === 0 && <div className="muted">Henüz oda eklenmedi.</div>}
+          {activeScene.subs.map(r => (
+            <div key={r.id} className="card" onClick={() => goRoom(r.id)}>
+              <div className="row">
+                <div>
+                  <div style={{fontSize:16, fontWeight:700}}>{r.name}</div>
+                  <div className="muted" style={{marginTop:4}}>{r.items.length} eşya</div>
+                </div>
+                <div style={{fontSize:18}}>›</div>
               </div>
-
-              <Section title={`Belgeler (${activeItem.docs.length})`} icon={<FileText />}>
-                {activeItem.docs.length ? activeItem.docs.map(doc => (
-                  <div key={doc.id} style={rowStyle}>
-                    <div>
-                      <div style={{ fontWeight:700 }}>{doc.name}</div>
-                      <div style={{ color:'#777', fontSize:12 }}>{doc.type}</div>
-                    </div>
-                  </div>
-                )) : <div style={{ color:'#666' }}>Belge yok</div>}
-              </Section>
-
-              <Section title={`Hayat Akışı (${activeItem.events.length})`} icon={<Clock3 />}>
-                {activeItem.events.map(ev => (
-                  <div key={ev.id} style={{ ...rowStyle, alignItems:'flex-start' }}>
-                    <div>
-                      <div style={{ color:'#777', fontSize:12 }}>{ev.date}</div>
-                      <div>{ev.text}</div>
-                    </div>
-                  </div>
-                ))}
-              </Section>
             </div>
+          ))}
+        </div>
+        {modal === "room" && (
+          <Modal title="Oda Ekle" onClose={() => setModal(null)}>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Oda Adı</div>
+              <input value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="Salon, Mutfak..." />
+            </label>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button>
+          </Modal>
+        )}
+      </div>
+    );
+  }
 
-            {modal === 'doc' && (
-              <Modal title="Belge Ekle" onClose={() => setModal(null)}>
-                <select value={docType} onChange={e => setDocType(e.target.value)} style={inputStyle}>
-                  <option value="">Tür seç</option>
-                  <option value="Fatura">Fatura</option>
-                  <option value="Garanti">Garanti</option>
-                  <option value="Ruhsat">Ruhsat</option>
-                  <option value="Sigorta">Sigorta</option>
-                </select>
-                <input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Fatura.pdf" style={inputStyle} />
-                <button onClick={addDoc} style={primaryBtn}>Belge Ekle</button>
-              </Modal>
-            )}
-
-            {modal === 'event' && (
-              <Modal title="Olay Ekle" onClose={() => setModal(null)}>
-                <input value={eventDate} onChange={e => setEventDate(e.target.value)} style={inputStyle} />
-                <input value={eventText} onChange={e => setEventText(e.target.value)} placeholder="Servise gönderildi" style={inputStyle} />
-                <button onClick={addEvent} style={primaryBtn}>Olay Ekle</button>
-              </Modal>
-            )}
-          </div>
-        );
-      }
-
-      return null;
-    }
-
-    function Modal({ title, children, onClose }) {
-      return (
-        <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width:'100%', maxWidth:420, background:'#141416', border:'1px solid #222', borderRadius:18, padding:16 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <div style={{ fontWeight:800, fontSize:18 }}>{title}</div>
-              <button onClick={onClose} style={{ background:'none', border:'none', color:'#888' }}><X /></button>
+  if (view === "room" && activeRoom) {
+    const placed = positions(activeRoom.items);
+    return (
+      <div>
+        <TopBar
+          title={activeRoom.name}
+          sub={`${activeScene ? activeScene.name : ""} · ${activeRoom.items.length} eşya`}
+          onBack={() => setView("scene")}
+          right={<button className="btn btn-primary" onClick={() => setModal("quick")}>+ Eşya</button>}
+        />
+        <div className="scene">
+          <div className="room-label">{activeRoom.name}</div>
+          {placed.map(({ item, x, y }) => (
+            <div key={item.id} className="item-node" style={{ left: `${x}%`, top: `${y}%` }} onClick={() => goItem(item.id)}>
+              <div className="icon">{detectIcon(item.name, item.type)}</div>
+              <div className="item-name">{item.name}</div>
             </div>
-            <div style={{ display:'grid', gap:10 }}>{children}</div>
+          ))}
+          {activeRoom.items.length === 0 && (
+            <div style={{position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center"}} className="muted">
+              Eşya ekleyin
+            </div>
+          )}
+        </div>
+        {modal === "quick" && (
+          <Modal title="Hızlı Eşya Ekle" onClose={() => setModal(null)}>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Eşya Adı</div>
+              <input value={quickItemName} onChange={e => setQuickItemName(e.target.value)} placeholder="Televizyon, Koltuk..." />
+            </label>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addQuickItem}>Odaya Ekle</button>
+          </Modal>
+        )}
+      </div>
+    );
+  }
+
+  if (view === "item" && activeItem) {
+    return (
+      <div>
+        <TopBar
+          title={activeItem.name}
+          sub={activeItem.brand ? `${activeItem.brand} ${activeItem.model || ""}` : (activeItem.type || "Detay")}
+          onBack={() => setView("room")}
+          right={
+            <div style={{display:"flex", gap:8}}>
+              <button className="btn btn-dark" onClick={() => setModal("doc")}>Belge</button>
+              <button className="btn btn-primary" onClick={() => setModal("event")}>Olay</button>
+            </div>
+          }
+        />
+        <div className="container">
+          <div style={{textAlign:"center", marginBottom:20}}>
+            <div style={{fontSize:64}}>{detectIcon(activeItem.name, activeItem.type)}</div>
+            {activeItem.value && <div style={{fontSize:24, fontWeight:700, marginTop:8}}>₺{parseFloat(activeItem.value).toLocaleString("tr-TR")}</div>}
+          </div>
+
+          <div className="grid2" style={{marginBottom:20}}>
+            {[
+              ["Marka", `${activeItem.brand || "-"} ${activeItem.model || ""}`.trim() || "-"],
+              ["Tanımlayıcı", activeItem.identifier || "-"],
+              ["Edinim", activeItem.acquisitionType || "-"],
+              ["Tarih", activeItem.acquisitionDate || "-"],
+              ["Sahip", activeItem.owner || "-"],
+              ["Konum", activeItem.location || "-"],
+            ].map(([k,v], i) => (
+              <div key={i} className="mini">
+                <div className="muted" style={{marginBottom:4}}>{k}</div>
+                <div style={{fontWeight:700, fontSize:13}}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="section">
+            <div className="row" style={{marginBottom:10}}>
+              <div style={{fontWeight:700}}>Belgeler ({activeItem.docs.length})</div>
+              <button className="btn btn-primary" onClick={() => setModal("doc")}>+ Belge</button>
+            </div>
+            {activeItem.docs.length === 0 && <div className="muted">Belge yok</div>}
+            {activeItem.docs.map(d => (
+              <div key={d.id} className="card" style={{marginBottom:6, padding:"10px 12px", cursor:"default"}}>
+                <div style={{fontSize:12, fontWeight:700}}>{d.name}</div>
+                <div className="muted" style={{marginTop:2}}>{d.type}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="section">
+            <div className="row" style={{marginBottom:10}}>
+              <div style={{fontWeight:700}}>Hayat Akışı ({activeItem.events.length})</div>
+              <button className="btn btn-primary" onClick={() => setModal("event")}>+ Olay</button>
+            </div>
+            {activeItem.events.map(ev => (
+              <div key={ev.id} className="timeline">
+                <div className="dot"></div>
+                <div>
+                  <div className="muted" style={{marginBottom:2}}>{ev.date}</div>
+                  <div style={{fontSize:13}}>{ev.text}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      );
-    }
 
-    function Top({ title, onBack, right }) {
-      return (
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <button onClick={onBack} style={{ background:'#141416', border:'1px solid #222', color:'#fff', borderRadius:10, width:38, height:38 }}><ArrowLeft /></button>
-            <div style={{ fontSize:22, fontWeight:800 }}>{title}</div>
-          </div>
-          {right}
-        </div>
-      );
-    }
+        {modal === "event" && (
+          <Modal title="Olay Ekle" onClose={() => setModal(null)}>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Tarih</div>
+              <input value={eventDate} onChange={e => setEventDate(e.target.value)} />
+            </label>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Açıklama</div>
+              <input value={eventText} onChange={e => setEventText(e.target.value)} placeholder="Servise gönderildi..." />
+            </label>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addEvent}>Ekle</button>
+          </Modal>
+        )}
 
-    function Info({ label, value }) {
-      return <div style={{ background:'#0a0a0c', border:'1px solid #222', borderRadius:12, padding:12 }}><div style={{ color:'#666', fontSize:11, marginBottom:4 }}>{label}</div><div>{value}</div></div>;
-    }
+        {modal === "doc" && (
+          <Modal title="Belge Ekle" onClose={() => setModal(null)}>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Tür</div>
+              <select value={docType} onChange={e => setDocType(e.target.value)}>
+                <option value="">Seçiniz</option>
+                <option value="Fatura">Fatura</option>
+                <option value="Garanti">Garanti</option>
+                <option value="Ruhsat">Ruhsat</option>
+                <option value="Sigorta">Sigorta</option>
+                <option value="Sözleşme">Sözleşme</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+            </label>
+            <label>
+              <div className="muted" style={{marginBottom:4}}>Ad</div>
+              <input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Fatura.pdf" />
+            </label>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addDoc}>Ekle</button>
+          </Modal>
+        )}
+      </div>
+    );
+  }
 
-    function Section({ title, icon, children }) {
-      return (
-        <div style={{ marginTop:16 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8, fontWeight:800, marginBottom:10 }}>{icon}{title}</div>
-          <div style={{ display:'grid', gap:8 }}>{children}</div>
-        </div>
-      );
-    }
+  return <div className="container">Boş ekran</div>;
+}
 
-    const inputStyle = { width:'100%', padding:'14px', borderRadius:12, border:'1px solid #2a2a2a', background:'#0a0a0c', color:'#fff', boxSizing:'border-box' };
-    const primaryBtn = { width:'100%', padding:'14px', borderRadius:12, border:'none', background:'#6366f1', color:'#fff', fontWeight:800 };
-    const rowStyle = { background:'#0a0a0c', border:'1px solid #222', borderRadius:12, padding:12 };
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
 </body>
 </html>

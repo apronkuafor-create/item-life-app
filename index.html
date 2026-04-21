@@ -17,8 +17,14 @@
     .btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
     .btn-primary { background:#6366f1; color:#fff; }
     .btn-dark { background:#141416; color:#fff; border:1px solid #2a2a2a; }
-    .btn-danger { background:#dc2626; color:#fff; }
+    .btn-ghost { background:transparent; color:#fff; border:1px solid #2a2a2a; }
     .muted { color:#888; font-size:12px; }
+    .hero-banner { background:linear-gradient(135deg,#171723,#0e0e14); border:1px solid #242436; border-radius:20px; padding:16px; margin-bottom:14px; }
+    .hero-grid { display:grid; grid-template-columns: 72px 1fr; gap:14px; align-items:center; }
+    .hero-icon { width:72px; height:72px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:38px; background:#222236; }
+    .metrics { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:12px; }
+    .metric { background:#101018; border:1px solid #222235; border-radius:12px; padding:12px; }
+    .warn-box { margin-top:12px; background:#2a1600; border:1px solid #6b3e00; color:#ffd08a; border-radius:12px; padding:12px; }
     .scene-page { min-height: calc(100vh - 57px); background:#161616; position:relative; overflow:hidden; }
     .scene-grid { position:absolute; inset:0; background-image:
       linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
@@ -32,16 +38,18 @@
     .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.9); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .grid1 { display:grid; grid-template-columns:1fr; gap:8px; }
     .mini { background:#141416; border:1px solid #1e1e22; border-radius:12px; padding:12px 14px; }
     .timeline { padding-bottom:12px; position:relative; display:flex; gap:10px; }
     .dot { width:8px; height:8px; border-radius:99px; margin-top:4px; background:#6366f1; flex-shrink:0; }
     .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; padding:16px; z-index:999; }
-    .modal { width:100%; max-width:420px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
-    input, select { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
+    .modal { width:100%; max-width:520px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
+    input, select, textarea { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
+    textarea { min-height: 84px; resize: vertical; }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px; }
-    .hero-note { background:#101014; border:1px solid #1e1e22; border-radius:16px; padding:14px; margin-bottom:12px; }
+    .badge { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:99px; font-size:12px; font-weight:700; }
   </style>
 </head>
 <body>
@@ -51,6 +59,10 @@
 const { useMemo, useState } = React;
 
 const icons = {
+  home: "🏠",
+  office: "🏢",
+  shop: "🏬",
+  car: "🚗",
   tv: "📺",
   sofa: "🛋️",
   lamp: "💡",
@@ -58,7 +70,6 @@ const icons = {
   laptop: "💻",
   bed: "🛏️",
   phone: "📱",
-  car: "🚗",
   table: "🪑",
   default: "📦",
 };
@@ -78,13 +89,24 @@ const starter = [
             type: "Elektronik",
             acquisitionType: "Satın alındı",
             acquisitionDate: "2026-04-12",
+            purchasePrice: "45000",
             status: "Kullanımda",
             brand: "Samsung",
             model: "QLED 65",
             identifier: "SN-10023",
             owner: "Benim",
             location: "Salon",
-            value: "45000",
+            warrantyEnd: "2026-05-15",
+            supplier: "Teknosa",
+            currentStage: "Kullanımda",
+            serviceStatus: "",
+            replacementApproved: "",
+            replacementName: "",
+            replacementBrand: "",
+            replacementModel: "",
+            replacementDate: "",
+            disposalStatus: "",
+            notes: "",
             events: [{ id: "e1", date: "12.04.2026", text: "Sisteme eklendi" }],
             docs: [{ id: "d1", name: "Fatura.pdf", type: "Fatura" }]
           },
@@ -94,13 +116,24 @@ const starter = [
             type: "Mobilya",
             acquisitionType: "Satın alındı",
             acquisitionDate: "2026-03-10",
+            purchasePrice: "32000",
             status: "Kullanımda",
             brand: "İstikbal",
             model: "L Koltuk",
             identifier: "",
-            owner: "",
+            owner: "Aile",
             location: "Salon",
-            value: "32000",
+            warrantyEnd: "2027-03-10",
+            supplier: "",
+            currentStage: "Kullanımda",
+            serviceStatus: "",
+            replacementApproved: "",
+            replacementName: "",
+            replacementBrand: "",
+            replacementModel: "",
+            replacementDate: "",
+            disposalStatus: "",
+            notes: "",
             events: [{ id: "e2", date: "10.03.2026", text: "Eklendi" }],
             docs: []
           }
@@ -116,13 +149,24 @@ const starter = [
             type: "Beyaz Eşya",
             acquisitionType: "Satın alındı",
             acquisitionDate: "2026-01-20",
+            purchasePrice: "28000",
             status: "Kullanımda",
             brand: "Arçelik",
             model: "No Frost",
             identifier: "",
-            owner: "",
+            owner: "Benim",
             location: "Mutfak",
-            value: "28000",
+            warrantyEnd: "2028-01-20",
+            supplier: "",
+            currentStage: "Kullanımda",
+            serviceStatus: "",
+            replacementApproved: "",
+            replacementName: "",
+            replacementBrand: "",
+            replacementModel: "",
+            replacementDate: "",
+            disposalStatus: "",
+            notes: "",
             events: [{ id: "e3", date: "20.01.2026", text: "Eklendi" }],
             docs: []
           }
@@ -132,8 +176,33 @@ const starter = [
   }
 ];
 
-const mkid = () => Math.random().toString(36).slice(2, 10);
-const tdy = () => new Date().toLocaleDateString("tr-TR");
+const emptyItemForm = () => ({
+  name: "",
+  type: "",
+  acquisitionType: "Satın alındı",
+  acquisitionDate: tdy(),
+  purchasePrice: "",
+  status: "Kullanımda",
+  brand: "",
+  model: "",
+  identifier: "",
+  owner: "",
+  location: "",
+  warrantyEnd: "",
+  supplier: "",
+  currentStage: "Satın alındı",
+  serviceStatus: "",
+  replacementApproved: "",
+  replacementName: "",
+  replacementBrand: "",
+  replacementModel: "",
+  replacementDate: "",
+  disposalStatus: "",
+  notes: ""
+});
+
+function mkid() { return Math.random().toString(36).slice(2, 10); }
+function tdy() { return new Date().toLocaleDateString("tr-TR"); }
 
 function detectIcon(name = "", type = "") {
   const t = `${name} ${type}`.toLowerCase();
@@ -149,6 +218,15 @@ function detectIcon(name = "", type = "") {
   return icons.default;
 }
 
+function detectSceneIcon(name = "") {
+  const t = name.toLowerCase();
+  if (t.includes("ev")) return icons.home;
+  if (t.includes("iş") || t.includes("ofis")) return icons.office;
+  if (t.includes("mağaza") || t.includes("dükkan") || t.includes("salon")) return icons.shop;
+  if (t.includes("araç") || t.includes("garaj")) return icons.car;
+  return icons.default;
+}
+
 function positions(items) {
   const base = [
     { x: 50, y: 18 },
@@ -161,6 +239,27 @@ function positions(items) {
     { x: 66, y: 82 },
   ];
   return items.map((item, i) => ({ item, ...(base[i] || { x: 20 + (i%3)*25, y: 85 }) }));
+}
+
+function parseTRDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr.includes(".")) {
+    const [d,m,y] = dateStr.split(".");
+    return new Date(+y, +m-1, +d);
+  }
+  if (dateStr.includes("-")) {
+    return new Date(dateStr);
+  }
+  return null;
+}
+
+function daysUntil(dateStr) {
+  const date = parseTRDate(dateStr);
+  if (!date || isNaN(date)) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  date.setHours(0,0,0,0);
+  return Math.round((date - today) / (1000 * 60 * 60 * 24));
 }
 
 function Modal({ title, onClose, children }) {
@@ -190,6 +289,52 @@ function TopBar({ title, sub, onBack, right }) {
   );
 }
 
+function ItemForm({ form, setForm }) {
+  function setField(key, value) {
+    setForm(prev => ({ ...prev, [key]: value }));
+  }
+  return (
+    <>
+      <div className="grid2">
+        <label><div className="muted" style={{marginBottom:4}}>Eşya Adı</div><input value={form.name} onChange={e=>setField("name", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} onChange={e=>setField("type", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate", e.target.value)} placeholder="18.04.2026" /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Garanti Bitiş</div><input value={form.warrantyEnd} onChange={e=>setField("warrantyEnd", e.target.value)} placeholder="18.06.2026" /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Tedarikçi / Satıcı</div><input value={form.supplier} onChange={e=>setField("supplier", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Tanımlayıcı</div><input value={form.identifier} onChange={e=>setField("identifier", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Sahip</div><input value={form.owner} onChange={e=>setField("owner", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Konum</div><input value={form.location} onChange={e=>setField("location", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Durum</div><input value={form.status} onChange={e=>setField("status", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Mevcut Aşama</div><input value={form.currentStage} onChange={e=>setField("currentStage", e.target.value)} placeholder="Satın alındı / Kullanımda / Bozuldu / Serviste..." /></label>
+      </div>
+
+      <div className="section" style={{marginTop:8}}>
+        <div style={{fontWeight:700, marginBottom:10}}>Servis / Değişim Süreci</div>
+        <div className="grid2">
+          <label><div className="muted" style={{marginBottom:4}}>Servis Durumu</div><input value={form.serviceStatus} onChange={e=>setField("serviceStatus", e.target.value)} placeholder="Serviste, İnceleniyor..." /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Kararı</div><input value={form.replacementApproved} onChange={e=>setField("replacementApproved", e.target.value)} placeholder="Onaylandı / Reddedildi" /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Adı</div><input value={form.replacementName} onChange={e=>setField("replacementName", e.target.value)} /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Marka</div><input value={form.replacementBrand} onChange={e=>setField("replacementBrand", e.target.value)} /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Model</div><input value={form.replacementModel} onChange={e=>setField("replacementModel", e.target.value)} /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Tarihi</div><input value={form.replacementDate} onChange={e=>setField("replacementDate", e.target.value)} placeholder="18.09.2026" /></label>
+        </div>
+      </div>
+
+      <div className="section" style={{marginTop:8}}>
+        <div style={{fontWeight:700, marginBottom:10}}>Hayat Sonu / Notlar</div>
+        <div className="grid1">
+          <label><div className="muted" style={{marginBottom:4}}>Çıkış / Çöp / Hurda Durumu</div><input value={form.disposalStatus} onChange={e=>setField("disposalStatus", e.target.value)} placeholder="Kullanımda / Satıldı / Çöpe gitti / Hurda..." /></label>
+          <label><div className="muted" style={{marginBottom:4}}>Notlar</div><textarea value={form.notes} onChange={e=>setField("notes", e.target.value)} placeholder="Ürünün başına gelen önemli şeyler..." /></label>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function App() {
   const [scenes, setScenes] = useState(starter);
   const [view, setView] = useState("home");
@@ -200,7 +345,8 @@ function App() {
 
   const [sceneName, setSceneName] = useState("");
   const [roomName, setRoomName] = useState("");
-  const [quickItemName, setQuickItemName] = useState("");
+  const [itemForm, setItemForm] = useState(emptyItemForm());
+  const [editForm, setEditForm] = useState(emptyItemForm());
   const [eventDate, setEventDate] = useState(tdy());
   const [eventText, setEventText] = useState("");
   const [docName, setDocName] = useState("");
@@ -208,9 +354,18 @@ function App() {
 
   const activeScene = useMemo(() => scenes.find(s => s.id === activeSceneId) || null, [scenes, activeSceneId]);
   const allItems = useMemo(() => scenes.flatMap(s => s.subs.flatMap(r => r.items)), [scenes]);
-  const totalValue = useMemo(() => allItems.reduce((a, i) => a + (parseFloat(i.value) || 0), 0).toLocaleString("tr-TR"), [allItems]);
+  const totalValue = useMemo(() => allItems.reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR"), [allItems]);
   const activeRoom = useMemo(() => activeScene ? activeScene.subs.find(r => r.id === activeRoomId) || null : null, [activeScene, activeRoomId]);
   const activeItem = useMemo(() => activeRoom ? activeRoom.items.find(i => i.id === activeItemId) || null : null, [activeRoom, activeItemId]);
+
+  const sceneValue = useMemo(() => activeScene ? activeScene.subs.flatMap(r => r.items).reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR") : "0", [activeScene]);
+  const expiringItems = useMemo(() => {
+    if (!activeScene) return [];
+    return activeScene.subs.flatMap(r => r.items).filter(i => {
+      const days = daysUntil(i.warrantyEnd);
+      return days !== null && days >= 0 && days <= 30;
+    });
+  }, [activeScene]);
 
   function goScene(id) { setActiveSceneId(id); setView("scene"); }
   function goRoom(id) { setActiveRoomId(id); setActiveItemId(""); setView("room"); }
@@ -236,21 +391,12 @@ function App() {
     setView("room");
   }
 
-  function addQuickItem() {
-    if (!quickItemName.trim() || !activeSceneId || !activeRoomId) return;
+  function addFullItem() {
+    if (!itemForm.name.trim() || !activeSceneId || !activeRoomId) return;
     const next = {
       id: mkid(),
-      name: quickItemName.trim(),
-      type: "",
-      acquisitionType: "",
-      acquisitionDate: tdy(),
-      status: "Kullanımda",
-      brand: "",
-      model: "",
-      identifier: "",
-      owner: "",
-      location: activeRoom ? activeRoom.name : "",
-      value: "",
+      ...itemForm,
+      location: itemForm.location || (activeRoom ? activeRoom.name : ""),
       events: [{ id: mkid(), date: tdy(), text: "Sisteme eklendi" }],
       docs: []
     };
@@ -258,7 +404,7 @@ function App() {
       ...s,
       subs: s.subs.map(r => r.id === activeRoomId ? { ...r, items: [...r.items, next] } : r)
     } : s));
-    setQuickItemName("");
+    setItemForm(emptyItemForm());
     setModal(null);
     setActiveItemId(next.id);
     setView("item");
@@ -269,6 +415,12 @@ function App() {
       ...s,
       subs: s.subs.map(r => ({ ...r, items: r.items.map(i => i.id === itemId ? updater(i) : i) }))
     } : s));
+  }
+
+  function saveEditedItem() {
+    if (!activeItem) return;
+    updateItem(activeItem.id, i => ({ ...i, ...editForm }));
+    setModal(null);
   }
 
   function addEvent() {
@@ -296,21 +448,37 @@ function App() {
           right={<button className="btn btn-primary" onClick={() => setModal("scene")}>+ Başlık</button>}
         />
         <div className="container">
-          <div className="hero-note">
-            <div style={{fontWeight:700, marginBottom:4}}>Başlıklar</div>
-            <div className="muted">Örnek: Evim. Bu başlık altında evinde olan eşyalar yer alır. Altında Salon, Mutfak gibi bölümler eklenir.</div>
-          </div>
           {scenes.map(s => {
             const count = s.subs.reduce((a, r) => a + r.items.length, 0);
+            const total = s.subs.flatMap(r => r.items).reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR");
+            const expiring = s.subs.flatMap(r => r.items).filter(i => {
+              const days = daysUntil(i.warrantyEnd);
+              return days !== null && days >= 0 && days <= 30;
+            });
             return (
-              <div key={s.id} className="card" onClick={() => goScene(s.id)}>
-                <div className="row">
+              <div key={s.id} className="hero-banner" onClick={() => goScene(s.id)} style={{cursor:"pointer"}}>
+                <div className="hero-grid">
+                  <div className="hero-icon">{detectSceneIcon(s.name)}</div>
                   <div>
-                    <div style={{fontSize:16, fontWeight:700}}>{s.name}</div>
+                    <div style={{fontSize:20, fontWeight:700}}>{s.name}</div>
                     <div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık · {count} eşya</div>
                   </div>
-                  <div style={{fontSize:18}}>›</div>
                 </div>
+                <div className="metrics">
+                  <div className="metric">
+                    <div className="muted">Toplam Satın Alma Değeri</div>
+                    <div style={{fontWeight:700, marginTop:4}}>₺{total}</div>
+                  </div>
+                  <div className="metric">
+                    <div className="muted">Garanti Uyarısı</div>
+                    <div style={{fontWeight:700, marginTop:4}}>{expiring.length} eşya</div>
+                  </div>
+                </div>
+                {expiring.length > 0 && (
+                  <div className="warn-box">
+                    Garantisi bitmek üzere: {expiring.map(i => i.name).join(", ")}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -333,11 +501,39 @@ function App() {
       <div>
         <TopBar
           title={activeScene.name}
-          sub={`${activeScene.subs.reduce((a,r)=>a+r.items.length,0)} eşya`}
+          sub="Başlık paneli"
           onBack={() => setView("home")}
           right={<button className="btn btn-primary" onClick={() => setModal("room")}>+ Alt Başlık</button>}
         />
         <div className="container">
+          <div className="hero-banner">
+            <div className="hero-grid">
+              <div className="hero-icon">{detectSceneIcon(activeScene.name)}</div>
+              <div>
+                <div style={{fontSize:20, fontWeight:700}}>{activeScene.name}</div>
+                <div className="muted" style={{marginTop:4}}>Bu başlık içindeki tüm eşyaların özeti</div>
+              </div>
+            </div>
+            <div className="metrics">
+              <div className="metric">
+                <div className="muted">Toplam Satın Alma Değeri</div>
+                <div style={{fontWeight:700, marginTop:4}}>₺{sceneValue}</div>
+              </div>
+              <div className="metric">
+                <div className="muted">Garanti Uyarısı</div>
+                <div style={{fontWeight:700, marginTop:4}}>{expiringItems.length} eşya</div>
+              </div>
+            </div>
+            {expiringItems.length > 0 && (
+              <div className="warn-box">
+                {expiringItems.map(i => {
+                  const d = daysUntil(i.warrantyEnd);
+                  return `${i.name} (${d} gün kaldı)`;
+                }).join(" · ")}
+              </div>
+            )}
+          </div>
+
           {activeScene.subs.length === 0 && <div className="muted">Henüz alt başlık eklenmedi.</div>}
           {activeScene.subs.map(r => (
             <div key={r.id} className="card" onClick={() => goRoom(r.id)}>
@@ -370,9 +566,9 @@ function App() {
       <div>
         <TopBar
           title={activeRoom.name}
-          sub={`${activeScene ? activeScene.name : ""} içinde`}
+          sub={`${activeScene ? activeScene.name : ""} içinde tam sayfa görünüm`}
           onBack={() => setView("scene")}
-          right={<button className="btn btn-primary" onClick={() => setModal("quick")}>+ Eşya</button>}
+          right={<button className="btn btn-primary" onClick={() => setModal("itemAdd")}>+ Eşya</button>}
         />
         <div className="scene-page">
           <div className="scene-grid"></div>
@@ -384,15 +580,12 @@ function App() {
               <div className="item-name">{item.name}</div>
             </div>
           ))}
-          {activeRoom.items.length === 0 && <div className="empty">Bu tam sayfada henüz eşya yok</div>}
+          {activeRoom.items.length === 0 && <div className="empty">Bu alanda henüz eşya yok</div>}
         </div>
-        {modal === "quick" && (
-          <Modal title="Eşya Ekle" onClose={() => setModal(null)}>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Eşya Adı</div>
-              <input value={quickItemName} onChange={e => setQuickItemName(e.target.value)} placeholder="Televizyon, Koltuk..." />
-            </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addQuickItem}>Ekle</button>
+        {modal === "itemAdd" && (
+          <Modal title="Yeni Eşya" onClose={() => setModal(null)}>
+            <ItemForm form={itemForm} setForm={setItemForm} />
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addFullItem}>Kaydet</button>
           </Modal>
         )}
       </div>
@@ -404,11 +597,12 @@ function App() {
       <div>
         <TopBar
           title={activeItem.name}
-          sub="Eşyanın Hayatı"
+          sub="Eşyanın hayatı tam sayfa"
           onBack={() => setView("room")}
           right={
             <div style={{display:"flex", gap:8}}>
               <button className="btn btn-dark" onClick={() => setModal("doc")}>Belge</button>
+              <button className="btn btn-dark" onClick={() => { setEditForm({...activeItem}); setModal("editItem"); }}>Düzenle</button>
               <button className="btn btn-primary" onClick={() => setModal("event")}>Olay</button>
             </div>
           }
@@ -417,7 +611,9 @@ function App() {
           <div style={{textAlign:"center", marginBottom:20}}>
             <div style={{fontSize:78}}>{detectIcon(activeItem.name, activeItem.type)}</div>
             <div style={{fontSize:26, fontWeight:700, marginTop:8}}>{activeItem.name}</div>
-            {activeItem.value && <div style={{fontSize:24, fontWeight:700, marginTop:8}}>₺{parseFloat(activeItem.value).toLocaleString("tr-TR")}</div>}
+            <div style={{marginTop:8}}>
+              <span className="badge" style={{background:"#1d2238", color:"#9fb0ff"}}>{activeItem.currentStage || "Kayıtlı"}</span>
+            </div>
           </div>
 
           <div className="grid2" style={{marginBottom:20}}>
@@ -426,8 +622,14 @@ function App() {
               ["Tanımlayıcı", activeItem.identifier || "-"],
               ["Edinim", activeItem.acquisitionType || "-"],
               ["Tarih", activeItem.acquisitionDate || "-"],
+              ["Satın Alma Değeri", activeItem.purchasePrice ? `₺${parseFloat(activeItem.purchasePrice).toLocaleString("tr-TR")}` : "-"],
+              ["Garanti Bitiş", activeItem.warrantyEnd || "-"],
               ["Sahip", activeItem.owner || "-"],
               ["Konum", activeItem.location || "-"],
+              ["Servis Durumu", activeItem.serviceStatus || "-"],
+              ["Yeni Ürün Kararı", activeItem.replacementApproved || "-"],
+              ["Yeni Ürün", [activeItem.replacementName, activeItem.replacementBrand, activeItem.replacementModel].filter(Boolean).join(" ") || "-"],
+              ["Çıkış Durumu", activeItem.disposalStatus || "-"],
             ].map(([k,v], i) => (
               <div key={i} className="mini">
                 <div className="muted" style={{marginBottom:4}}>{k}</div>
@@ -437,10 +639,7 @@ function App() {
           </div>
 
           <div className="section">
-            <div className="row" style={{marginBottom:10}}>
-              <div style={{fontWeight:700}}>Belgeler ({activeItem.docs.length})</div>
-              <button className="btn btn-primary" onClick={() => setModal("doc")}>+ Belge</button>
-            </div>
+            <div style={{fontWeight:700, marginBottom:10}}>Belgeler ({activeItem.docs.length})</div>
             {activeItem.docs.length === 0 && <div className="muted">Belge yok</div>}
             {activeItem.docs.map(d => (
               <div key={d.id} className="card" style={{marginBottom:6, padding:"10px 12px", cursor:"default"}}>
@@ -451,10 +650,7 @@ function App() {
           </div>
 
           <div className="section">
-            <div className="row" style={{marginBottom:10}}>
-              <div style={{fontWeight:700}}>Hayat Akışı ({activeItem.events.length})</div>
-              <button className="btn btn-primary" onClick={() => setModal("event")}>+ Olay</button>
-            </div>
+            <div style={{fontWeight:700, marginBottom:10}}>Hayat Akışı ({activeItem.events.length})</div>
             {activeItem.events.map(ev => (
               <div key={ev.id} className="timeline">
                 <div className="dot"></div>
@@ -464,6 +660,11 @@ function App() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="section">
+            <div style={{fontWeight:700, marginBottom:10}}>Notlar</div>
+            <div className="muted" style={{fontSize:13, lineHeight:1.5}}>{activeItem.notes || "Not yok"}</div>
           </div>
         </div>
 
@@ -500,6 +701,13 @@ function App() {
               <input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Fatura.pdf" />
             </label>
             <button className="btn btn-primary" style={{width:"100%"}} onClick={addDoc}>Ekle</button>
+          </Modal>
+        )}
+
+        {modal === "editItem" && (
+          <Modal title="Eşya Bilgilerini Düzenle" onClose={() => setModal(null)}>
+            <ItemForm form={editForm} setForm={setEditForm} />
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={saveEditedItem}>Kaydet</button>
           </Modal>
         )}
       </div>

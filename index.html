@@ -9,31 +9,27 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0b15;
-      color: #f0f1fb;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
     .app {
       min-height: 100vh;
       background:
-        radial-gradient(circle at top right, rgba(99,102,241,.14) 0%, transparent 24%),
-        radial-gradient(circle at bottom left, rgba(168,85,247,.08) 0%, transparent 20%),
-        #0b0b15;
+        radial-gradient(circle at top right, var(--glow1) 0%, transparent 24%),
+        radial-gradient(circle at bottom left, var(--glow2) 0%, transparent 20%),
+        var(--bg);
+      transition: background .25s ease, color .25s ease;
     }
     .topbar {
       padding: 14px 16px;
-      border-bottom: 1px solid #2b3352;
+      border-bottom: 1px solid var(--line);
       display:flex; align-items:center; gap:10px;
       position:sticky; top:0; z-index:20;
-      background: rgba(11,11,21,.88);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(14px);
     }
     .container { padding: 16px; }
-    .hero, .card, .mini, .modal {
-      background: #141727;
-      border: 1px solid #2b3352;
+    .hero, .card, .mini, .modal, .section {
+      background: var(--card);
+      border: 1px solid var(--line);
       box-shadow: 0 10px 30px rgba(0,0,0,.18);
     }
     .hero { border-radius: 22px; padding: 16px; margin-bottom: 14px; cursor: pointer; }
@@ -41,28 +37,32 @@
     .hero-icon {
       width:76px; height:76px; border-radius:24px;
       display:flex; align-items:center; justify-content:center;
-      font-size:38px; background: linear-gradient(135deg,#1c1f40,#1b2035);
-      border: 1px solid #3d4680;
+      font-size:38px; background: linear-gradient(135deg, var(--accentSoft), var(--card2));
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    }
+    .theme-section-title { font-size: 14px; font-weight: 700; margin: 14px 0 8px; color: var(--muted); }
+    .theme-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .theme-card {
+      border:1px solid var(--line); border-radius:16px; padding:10px; background: var(--card2); cursor:pointer;
+      display:flex; gap:10px; align-items:center;
+    }
+    .theme-card.active { outline: 2px solid var(--accent); }
+    .theme-preview {
+      width:54px; height:54px; border-radius:14px; flex-shrink:0; border:1px solid rgba(255,255,255,.14);
     }
     .card { border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor:pointer; }
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .muted { color:#a8adca; font-size:12px; }
-    .btn {
-      border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
-      font-weight:700;
-    }
+    .muted { color: var(--muted); font-size:12px; }
+    .btn { border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:700; }
     .btn-primary {
-      background: linear-gradient(135deg,#6366f1,#a855f7);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       color:#fff;
     }
-    .btn-dark {
-      background:#1b2035; color:#f0f1fb; border:1px solid #2b3352;
-    }
+    .btn-dark { background: var(--card2); color: var(--text); border:1px solid var(--line); }
     .scene {
       min-height: calc(100vh - 57px);
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(180deg,#1c1f40 0%, #1b2035 100%);
+      position: relative; overflow: hidden;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accentSoft) 60%, var(--card)) 0%, var(--card2) 100%);
     }
     .scene-grid {
       position:absolute; inset:0;
@@ -73,38 +73,35 @@
     }
     .scene-frame {
       position:absolute; inset:18px;
-      border:2px solid rgba(99,102,241,.22);
+      border:2px solid color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,.06));
       border-radius:18px;
     }
     .room-label {
       position:absolute; top:14px; left:14px;
-      background: rgba(20,23,39,.85);
-      border:1px solid #2b3352;
+      background: color-mix(in srgb, var(--card) 85%, transparent);
+      border:1px solid var(--line);
       padding:8px 14px; border-radius:12px; font-size:14px; font-weight:700; z-index:5;
       backdrop-filter: blur(10px);
     }
     .item-node {
       position:absolute; transform:translate(-50%,-50%);
       cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none;
-      width: 132px;
+      width: 138px;
     }
     .item-node.dragging { cursor:grabbing; z-index:20; }
     .item-name {
-      margin-top:8px; font-size:12px; color:#f0f1fb;
-      background: rgba(20,23,39,.82);
+      margin-top:8px; font-size:12px; color:var(--text);
+      background: color-mix(in srgb, var(--card) 80%, transparent);
       padding:4px 10px; border-radius:999px;
-      display:inline-block; max-width:124px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      border: 1px solid #2b3352;
-      font-weight: 700;
+      display:inline-block; max-width:128px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      border: 1px solid var(--line); font-weight:700;
     }
     .item-model {
-      margin-top:4px; font-size:10px; color:#a8adca;
-      display:block; max-width:124px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      margin-top:4px; font-size:10px; color:var(--muted);
+      display:block; max-width:128px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
-    .item-color {
-      margin-top:3px; font-size:10px; color:#8ea0ff; font-weight:700;
-    }
-    .section { border-radius:18px; padding:16px; margin-bottom:14px; background:#141727; border:1px solid #2b3352; }
+    .item-color { margin-top:3px; font-size:10px; color:var(--accent); font-weight:700; }
+    .section { border-radius:18px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .mini { border-radius:14px; padding:12px 14px; }
     .modal-backdrop {
@@ -113,34 +110,48 @@
       backdrop-filter: blur(10px);
     }
     .modal {
-      width:100%; max-width:700px; max-height:88vh; overflow:auto;
+      width:100%; max-width:760px; max-height:88vh; overflow:auto;
       border-radius:24px; padding:20px;
     }
     input, select {
-      width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2b3352;
-      background:#1b2035; color:#f0f1fb; outline:none;
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
+      background: var(--card2); color: var(--text); outline:none;
     }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
-    .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#a8adca; font-size:14px; }
+    .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; }
     .doc-pill {
-      display:inline-block; background:#1b2035; border:1px solid #2b3352; border-radius:999px;
+      display:inline-block; background:var(--card2); border:1px solid var(--line); border-radius:999px;
       padding:6px 10px; font-size:11px; margin:4px 6px 0 0;
     }
-    .svg-icon {
-      width: 86px;
-      height: 86px;
-      margin: 0 auto;
-      display: block;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.28));
-    }
-    @media (max-width: 640px) { .grid2 { grid-template-columns:1fr; } }
+    .svg-icon { width: 92px; height: 92px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
+    .hint { margin-top: 8px; font-size: 11px; color: var(--muted); }
+    @media (max-width: 760px) { .grid2, .theme-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useMemo, useState, useRef } = React;
+const { useMemo, useState, useRef, useEffect } = React;
+
+const THEME_GROUPS = {
+  "Sıcak Temalar": {
+    warm_sunset: { label: "Sunset", bg:"#140d0a", text:"#fbf4ef", muted:"#c8b3a7", card:"#1e1512", card2:"#291d19", line:"#3a2b25", accent:"#f97316", accent2:"#ef4444", accentSoft:"#3f2316", glow1:"rgba(249,115,22,.14)", glow2:"rgba(239,68,68,.08)" },
+    honey_gold: { label: "Honey Gold", bg:"#120f08", text:"#faf5ea", muted:"#c7b899", card:"#1b1710", card2:"#262016", line:"#3a311f", accent:"#d4af37", accent2:"#f59e0b", accentSoft:"#3d2d10", glow1:"rgba(212,175,55,.12)", glow2:"rgba(245,158,11,.08)" }
+  },
+  "Kurumsal Temalar": {
+    royal_navy: { label: "Royal Navy", bg:"#0b0b15", text:"#f0f1fb", muted:"#a8adca", card:"#141727", card2:"#1b2035", line:"#2b3352", accent:"#6366f1", accent2:"#a855f7", accentSoft:"#1c1f40", glow1:"rgba(99,102,241,.14)", glow2:"rgba(168,85,247,.08)" },
+    slate_pro: { label: "Slate Pro", bg:"#0c1015", text:"#eff4f8", muted:"#9db0bf", card:"#141b22", card2:"#1b242e", line:"#2a3643", accent:"#3b82f6", accent2:"#06b6d4", accentSoft:"#1a2635", glow1:"rgba(59,130,246,.12)", glow2:"rgba(6,182,212,.08)" }
+  },
+  "Doğal Temalar": {
+    forest_mint: { label: "Forest Mint", bg:"#08110c", text:"#edf7f1", muted:"#9db6a7", card:"#101915", card2:"#17231d", line:"#24352d", accent:"#22c55e", accent2:"#14b8a6", accentSoft:"#173625", glow1:"rgba(34,197,94,.12)", glow2:"rgba(20,184,166,.08)" },
+    olive_clay: { label: "Olive Clay", bg:"#0f120c", text:"#f2f4ec", muted:"#b1b7a2", card:"#171a13", card2:"#202518", line:"#313926", accent:"#84cc16", accent2:"#65a30d", accentSoft:"#28311a", glow1:"rgba(132,204,22,.12)", glow2:"rgba(101,163,13,.08)" }
+  },
+  "Canlı Temalar": {
+    rose_pop: { label: "Rose Pop", bg:"#160d13", text:"#fff0f7", muted:"#c7a6b7", card:"#21131c", card2:"#2c1824", line:"#462534", accent:"#ec4899", accent2:"#fb7185", accentSoft:"#3a1c2c", glow1:"rgba(236,72,153,.12)", glow2:"rgba(251,113,133,.08)" },
+    citrus_wave: { label: "Citrus Wave", bg:"#121108", text:"#fffbea", muted:"#cfc595", card:"#1d1b10", card2:"#282517", line:"#3b371f", accent:"#eab308", accent2:"#f97316", accentSoft:"#362c12", glow1:"rgba(234,179,8,.12)", glow2:"rgba(249,115,22,.08)" }
+  }
+};
 
 const ITEM_CATEGORIES = {
   "Elektronik Eşyalar": [
@@ -148,18 +159,43 @@ const ITEM_CATEGORIES = {
     { name: "Laptop", type: "Elektronik" }, { name: "Tablet", type: "Elektronik" },
     { name: "Monitör", type: "Elektronik" }, { name: "Hoparlör", type: "Elektronik" },
     { name: "Kulaklık", type: "Elektronik" }, { name: "Oyun Konsolu", type: "Elektronik" },
-    { name: "Modem", type: "Elektronik" }, { name: "Klima", type: "Elektronik" }
+    { name: "Modem", type: "Elektronik" }, { name: "Klima", type: "Elektronik" },
+    { name: "Akıllı Saat", type: "Elektronik" }, { name: "Projektör", type: "Elektronik" },
+    { name: "Yazıcı", type: "Elektronik" }, { name: "Kamera", type: "Elektronik" }
   ],
   "Mobilyalar": [
     { name: "Koltuk Takımı", type: "Mobilya" }, { name: "Kanepe", type: "Mobilya" },
     { name: "Masa", type: "Mobilya" }, { name: "Sandalye", type: "Mobilya" },
     { name: "Yatak", type: "Mobilya" }, { name: "Dolap", type: "Mobilya" },
-    { name: "Kitaplık", type: "Mobilya" }
+    { name: "Kitaplık", type: "Mobilya" }, { name: "TV Ünitesi", type: "Mobilya" },
+    { name: "Komodin", type: "Mobilya" }, { name: "Şifonyer", type: "Mobilya" },
+    { name: "Çalışma Masası", type: "Mobilya" }, { name: "Ofis Koltuğu", type: "Mobilya" },
+    { name: "Sehpa", type: "Mobilya" }, { name: "Raf", type: "Mobilya" }
   ],
   "Beyaz Eşyalar": [
     { name: "Buzdolabı", type: "Beyaz Eşya" }, { name: "Çamaşır Makinesi", type: "Beyaz Eşya" },
     { name: "Bulaşık Makinesi", type: "Beyaz Eşya" }, { name: "Kurutma Makinesi", type: "Beyaz Eşya" },
-    { name: "Fırın", type: "Beyaz Eşya" }
+    { name: "Fırın", type: "Beyaz Eşya" }, { name: "Derin Dondurucu", type: "Beyaz Eşya" },
+    { name: "Set Üstü Ocak", type: "Beyaz Eşya" }, { name: "Davlumbaz", type: "Beyaz Eşya" }
+  ],
+  "Mutfak Eşyaları": [
+    { name: "Mikrodalga", type: "Mutfak Eşyası" }, { name: "Kahve Makinesi", type: "Mutfak Eşyası" },
+    { name: "Blender", type: "Mutfak Eşyası" }, { name: "Su Isıtıcı", type: "Mutfak Eşyası" },
+    { name: "Airfryer", type: "Mutfak Eşyası" }, { name: "Tost Makinesi", type: "Mutfak Eşyası" },
+    { name: "Meyve Sıkacağı", type: "Mutfak Eşyası" }, { name: "Robot Süpürge", type: "Mutfak Eşyası" }
+  ],
+  "Aydınlatma": [
+    { name: "Abajur", type: "Aydınlatma" }, { name: "Lamba", type: "Aydınlatma" },
+    { name: "Avize", type: "Aydınlatma" }, { name: "Gece Lambası", type: "Aydınlatma" },
+    { name: "Masa Lambası", type: "Aydınlatma" }
+  ],
+  "Kişisel Eşyalar": [
+    { name: "Saat", type: "Kişisel Eşya" }, { name: "Gözlük", type: "Kişisel Eşya" },
+    { name: "Çanta", type: "Kişisel Eşya" }, { name: "Cüzdan", type: "Kişisel Eşya" },
+    { name: "Valiz", type: "Kişisel Eşya" }
+  ],
+  "Araç Eşyaları": [
+    { name: "Araba", type: "Araç" }, { name: "Motosiklet", type: "Araç" }, { name: "Bisiklet", type: "Araç" }
   ],
   "Diğer": [{ name: "Özel Eşya", type: "Diğer" }]
 };
@@ -183,70 +219,173 @@ const starter = [
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
 function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"", color:"", invoiceFiles:[] }; }
-function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return "🏠"; if(t.includes("iş")||t.includes("ofis")) return "🏢"; return "📦"; }
+function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return "🏠"; if(t.includes("iş")||t.includes("ofis")) return "🏢"; if(t.includes("mağaza")||t.includes("salon")) return "🏬"; return "📦"; }
 function defaultPos(index){ const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}]; return base[index] || {x:20+(index%3)*25,y:85}; }
+
+function applyTheme(theme){
+  const root = document.documentElement;
+  Object.entries(theme).forEach(([k,v]) => { if(k !== "label") root.style.setProperty(`--${k}`, v); });
+}
 
 function ProductIcon({ item }) {
   const c = COLOR_HEX[item.color] || "#64748b";
   const name = (item.name || "").toLowerCase();
-  const common = { stroke: "#dbe6ff", strokeWidth: "2", strokeLinejoin: "round", strokeLinecap: "round" };
-  if (name.includes("telefon")) {
-    return (
-      <svg className="svg-icon" viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id={"g1-"+item.id} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.4"/>
-            <stop offset="100%" stopColor={c}/>
-          </linearGradient>
-        </defs>
-        <rect x="26" y="10" rx="13" ry="13" width="48" height="80" fill={"url(#g1-"+item.id+")"} stroke="#e6edff" strokeWidth="2.3"/>
-        <rect x="31" y="17" rx="8" ry="8" width="38" height="60" fill="#0f172a" stroke="#a9bbff" strokeWidth="1.3"/>
-        <circle cx="50" cy="83" r="3.2" fill="#dbe6ff"/>
-        <circle cx="50" cy="14" r="1.8" fill="#dbe6ff"/>
-      </svg>
-    );
-  }
-  if (name.includes("telev")) {
-    return (
-      <svg className="svg-icon" viewBox="0 0 100 100">
-        <rect x="12" y="18" rx="10" ry="10" width="76" height="48" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
-        <rect x="18" y="24" rx="6" ry="6" width="64" height="36" fill={c} opacity="0.75" stroke="#a9bbff" strokeWidth="1.3"/>
-        <line x1="50" y1="66" x2="50" y2="78" {...common} />
-        <line x1="36" y1="82" x2="64" y2="82" {...common} />
-      </svg>
-    );
-  }
-  if (name.includes("laptop")) {
-    return (
-      <svg className="svg-icon" viewBox="0 0 100 100">
-        <rect x="24" y="20" rx="7" ry="7" width="52" height="34" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
-        <rect x="28" y="24" rx="4" ry="4" width="44" height="26" fill={c} opacity="0.7"/>
-        <path d="M14 66 H86 L78 78 H22 Z" fill="#31405f" stroke="#dbe6ff" strokeWidth="2.3" strokeLinejoin="round"/>
-      </svg>
-    );
-  }
-  if (name.includes("koltuk") || name.includes("kanepe")) {
-    return (
-      <svg className="svg-icon" viewBox="0 0 100 100">
-        <rect x="20" y="42" rx="10" ry="10" width="60" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2.3"/>
-        <rect x="24" y="28" rx="9" ry="9" width="52" height="18" fill={c} opacity="0.86" stroke="#f4e7d7" strokeWidth="2.1"/>
-        <rect x="14" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
-        <rect x="74" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
-        <line x1="26" y1="66" x2="24" y2="77" stroke="#f4e7d7" strokeWidth="2"/>
-        <line x1="74" y1="66" x2="76" y2="77" stroke="#f4e7d7" strokeWidth="2"/>
-      </svg>
-    );
-  }
-  if (name.includes("buzdol")) {
-    return (
-      <svg className="svg-icon" viewBox="0 0 100 100">
-        <rect x="28" y="10" rx="10" ry="10" width="44" height="80" fill={c} stroke="#e8f5ff" strokeWidth="2.3"/>
-        <line x1="28" y1="46" x2="72" y2="46" stroke="#e8f5ff" strokeWidth="2"/>
-        <line x1="64" y1="28" x2="64" y2="38" stroke="#e8f5ff" strokeWidth="2.2"/>
-        <line x1="64" y1="58" x2="64" y2="74" stroke="#e8f5ff" strokeWidth="2.2"/>
-      </svg>
-    );
-  }
+  const common = { stroke: "#eaf1ff", strokeWidth: "2", strokeLinejoin: "round", strokeLinecap: "round" };
+  if (name.includes("telefon")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <defs><linearGradient id={"g1-"+item.id} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffffff" stopOpacity="0.4"/><stop offset="100%" stopColor={c}/></linearGradient></defs>
+      <rect x="26" y="10" rx="13" ry="13" width="48" height="80" fill={"url(#g1-"+item.id+")"} stroke="#e6edff" strokeWidth="2.3"/>
+      <rect x="31" y="17" rx="8" ry="8" width="38" height="60" fill="#0f172a" stroke="#a9bbff" strokeWidth="1.3"/>
+      <circle cx="50" cy="83" r="3.2" fill="#dbe6ff"/><circle cx="50" cy="14" r="1.8" fill="#dbe6ff"/>
+      <circle cx="62" cy="24" r="3" fill="#0b1220"/><circle cx="56" cy="24" r="2.1" fill="#0b1220"/>
+    </svg>
+  );
+  if (name.includes("telev")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="12" y="18" rx="10" ry="10" width="76" height="48" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
+      <rect x="18" y="24" rx="6" ry="6" width="64" height="36" fill={c} opacity="0.75" stroke="#a9bbff" strokeWidth="1.3"/>
+      <line x1="50" y1="66" x2="50" y2="78" {...common} /><line x1="36" y1="82" x2="64" y2="82" {...common} />
+    </svg>
+  );
+  if (name.includes("laptop")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="24" y="20" rx="7" ry="7" width="52" height="34" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
+      <rect x="28" y="24" rx="4" ry="4" width="44" height="26" fill={c} opacity="0.7"/>
+      <path d="M14 66 H86 L78 78 H22 Z" fill="#31405f" stroke="#dbe6ff" strokeWidth="2.3" strokeLinejoin="round"/>
+    </svg>
+  );
+  if (name.includes("tablet")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="20" y="16" rx="10" ry="10" width="60" height="68" fill={c} stroke="#e6edff" strokeWidth="2.3"/>
+      <rect x="25" y="22" rx="6" ry="6" width="50" height="54" fill="#0f172a" stroke="#a9bbff" strokeWidth="1.2"/>
+      <circle cx="50" cy="80" r="2.4" fill="#dbe6ff"/>
+    </svg>
+  );
+  if (name.includes("monit")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="16" y="18" rx="8" ry="8" width="68" height="44" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
+      <rect x="22" y="24" rx="5" ry="5" width="56" height="32" fill={c} opacity="0.75"/>
+      <line x1="50" y1="62" x2="50" y2="74" {...common} /><line x1="34" y1="78" x2="66" y2="78" {...common} />
+    </svg>
+  );
+  if (name.includes("hoparl")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="28" y="16" rx="10" ry="10" width="44" height="68" fill={c} stroke="#e6edff" strokeWidth="2.3"/>
+      <circle cx="50" cy="40" r="12" fill="#0f172a" stroke="#dbe6ff" strokeWidth="1.8"/>
+      <circle cx="50" cy="62" r="7" fill="#0f172a" stroke="#dbe6ff" strokeWidth="1.6"/>
+    </svg>
+  );
+  if (name.includes("koltuk") || name.includes("kanepe")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="20" y="42" rx="10" ry="10" width="60" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2.3"/>
+      <rect x="24" y="28" rx="9" ry="9" width="52" height="18" fill={c} opacity="0.86" stroke="#f4e7d7" strokeWidth="2.1"/>
+      <rect x="14" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
+      <rect x="74" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
+      <line x1="26" y1="66" x2="24" y2="77" stroke="#f4e7d7" strokeWidth="2"/><line x1="74" y1="66" x2="76" y2="77" stroke="#f4e7d7" strokeWidth="2"/>
+    </svg>
+  );
+  if (name.includes("masa")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="20" y="26" rx="7" ry="7" width="60" height="12" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
+      <line x1="28" y1="38" x2="24" y2="78" stroke="#f2efe8" strokeWidth="2.2"/><line x1="72" y1="38" x2="76" y2="78" stroke="#f2efe8" strokeWidth="2.2"/>
+      <line x1="38" y1="38" x2="38" y2="76" stroke="#f2efe8" strokeWidth="2"/><line x1="62" y1="38" x2="62" y2="76" stroke="#f2efe8" strokeWidth="2"/>
+    </svg>
+  );
+  if (name.includes("sandalye") || name.includes("koltuğu")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="34" y="22" rx="8" ry="8" width="32" height="20" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
+      <rect x="30" y="46" rx="7" ry="7" width="40" height="12" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
+      <line x1="36" y1="58" x2="32" y2="80" stroke="#f2efe8" strokeWidth="2.2"/><line x1="64" y1="58" x2="68" y2="80" stroke="#f2efe8" strokeWidth="2.2"/>
+      <line x1="36" y1="42" x2="36" y2="58" stroke="#f2efe8" strokeWidth="2"/><line x1="64" y1="42" x2="64" y2="58" stroke="#f2efe8" strokeWidth="2"/>
+    </svg>
+  );
+  if (name.includes("yatak")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="16" y="38" rx="8" ry="8" width="68" height="26" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
+      <rect x="20" y="28" rx="8" ry="8" width="20" height="12" fill="#f6efe8" stroke="#e6ded4" strokeWidth="1.5"/>
+      <line x1="18" y1="64" x2="18" y2="80" stroke="#f2efe8" strokeWidth="2.2"/><line x1="82" y1="64" x2="82" y2="80" stroke="#f2efe8" strokeWidth="2.2"/>
+    </svg>
+  );
+  if (name.includes("dolap") || name.includes("şifonyer") || name.includes("kitaplık")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="26" y="14" rx="8" ry="8" width="48" height="72" fill={c} stroke="#efe7dc" strokeWidth="2.2"/>
+      <line x1="50" y1="14" x2="50" y2="86" stroke="#efe7dc" strokeWidth="2"/><circle cx="46" cy="50" r="2" fill="#efe7dc"/><circle cx="54" cy="50" r="2" fill="#efe7dc"/>
+    </svg>
+  );
+  if (name.includes("buzdol")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="28" y="10" rx="10" ry="10" width="44" height="80" fill={c} stroke="#e8f5ff" strokeWidth="2.3"/>
+      <line x1="28" y1="46" x2="72" y2="46" stroke="#e8f5ff" strokeWidth="2"/>
+      <line x1="64" y1="28" x2="64" y2="38" stroke="#e8f5ff" strokeWidth="2.2"/><line x1="64" y1="58" x2="64" y2="74" stroke="#e8f5ff" strokeWidth="2.2"/>
+    </svg>
+  );
+  if (name.includes("çamaşır") || name.includes("bulaşık") || name.includes("kurutma")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="24" y="12" rx="10" ry="10" width="52" height="76" fill={c} stroke="#e8f5ff" strokeWidth="2.2"/>
+      <rect x="24" y="12" rx="10" ry="10" width="52" height="16" fill="#dbe6ff" opacity="0.35"/>
+      <circle cx="50" cy="54" r="18" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2"/>
+      <circle cx="50" cy="54" r="10" fill={c} opacity="0.65"/>
+    </svg>
+  );
+  if (name.includes("fırın") || name.includes("airfryer") || name.includes("tost")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="22" y="20" rx="10" ry="10" width="56" height="58" fill={c} stroke="#f8efe2" strokeWidth="2.2"/>
+      <rect x="30" y="34" rx="6" ry="6" width="40" height="24" fill="#24160e" stroke="#f8efe2" strokeWidth="1.6"/>
+      <circle cx="34" cy="26" r="2" fill="#f8efe2"/><circle cx="42" cy="26" r="2" fill="#f8efe2"/><circle cx="50" cy="26" r="2" fill="#f8efe2"/>
+    </svg>
+  );
+  if (name.includes("kahve")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="28" y="22" rx="8" ry="8" width="32" height="42" fill={c} stroke="#f5efe9" strokeWidth="2.2"/>
+      <path d="M60 30 Q76 30 76 42 Q76 54 60 54" fill="none" stroke="#f5efe9" strokeWidth="2.2"/>
+      <line x1="36" y1="18" x2="34" y2="8" stroke="#f5efe9" strokeWidth="2"/><line x1="46" y1="18" x2="46" y2="8" stroke="#f5efe9" strokeWidth="2"/>
+      <rect x="24" y="64" rx="5" ry="5" width="44" height="8" fill="#f5efe9"/>
+    </svg>
+  );
+  if (name.includes("mikrodalga")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="16" y="28" rx="8" ry="8" width="68" height="38" fill={c} stroke="#e8f1ff" strokeWidth="2.2"/>
+      <rect x="22" y="34" rx="5" ry="5" width="40" height="26" fill="#0f172a" stroke="#e8f1ff" strokeWidth="1.4"/>
+      <circle cx="72" cy="40" r="2.5" fill="#e8f1ff"/><circle cx="72" cy="50" r="2.5" fill="#e8f1ff"/>
+    </svg>
+  );
+  if (name.includes("saat")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="42" y="10" rx="6" ry="6" width="16" height="16" fill={c} stroke="#e8f1ff" strokeWidth="2"/>
+      <circle cx="50" cy="50" r="22" fill={c} stroke="#e8f1ff" strokeWidth="2.2"/>
+      <line x1="50" y1="50" x2="50" y2="36" stroke="#e8f1ff" strokeWidth="2.2"/><line x1="50" y1="50" x2="61" y2="56" stroke="#e8f1ff" strokeWidth="2.2"/>
+      <rect x="42" y="74" rx="6" ry="6" width="16" height="16" fill={c} stroke="#e8f1ff" strokeWidth="2"/>
+    </svg>
+  );
+  if (name.includes("gözlük")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <circle cx="34" cy="50" r="14" fill="none" stroke={c} strokeWidth="6"/>
+      <circle cx="66" cy="50" r="14" fill="none" stroke={c} strokeWidth="6"/>
+      <line x1="48" y1="50" x2="52" y2="50" stroke={c} strokeWidth="4"/>
+      <line x1="20" y1="46" x2="8" y2="40" stroke={c} strokeWidth="4"/><line x1="80" y1="46" x2="92" y2="40" stroke={c} strokeWidth="4"/>
+    </svg>
+  );
+  if (name.includes("çanta") || name.includes("valiz")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <rect x="24" y="28" rx="10" ry="10" width="52" height="46" fill={c} stroke="#f5efe9" strokeWidth="2.2"/>
+      <path d="M38 28 Q38 16 50 16 Q62 16 62 28" fill="none" stroke="#f5efe9" strokeWidth="2.2"/>
+    </svg>
+  );
+  if (name.includes("araba")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <path d="M20 58 L28 42 H70 L80 58 V68 H20 Z" fill={c} stroke="#eef4ff" strokeWidth="2.2" strokeLinejoin="round"/>
+      <circle cx="32" cy="68" r="7" fill="#111827" stroke="#eef4ff" strokeWidth="2"/>
+      <circle cx="68" cy="68" r="7" fill="#111827" stroke="#eef4ff" strokeWidth="2"/>
+      <path d="M36 42 L46 30 H62 L70 42" fill="#9ac1ff" opacity="0.65" stroke="#eef4ff" strokeWidth="1.4"/>
+    </svg>
+  );
+  if (name.includes("bisiklet")) return (
+    <svg className="svg-icon" viewBox="0 0 100 100">
+      <circle cx="28" cy="66" r="12" fill="none" stroke={c} strokeWidth="4"/>
+      <circle cx="72" cy="66" r="12" fill="none" stroke={c} strokeWidth="4"/>
+      <path d="M28 66 L44 48 L54 66 L40 66 M44 48 H60 L72 66 M54 36 L48 48" fill="none" stroke={c} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
   return (
     <svg className="svg-icon" viewBox="0 0 100 100">
       <rect x="24" y="24" rx="12" ry="12" width="52" height="52" fill={c} stroke="#dbe6ff" strokeWidth="2.3"/>
@@ -307,6 +446,7 @@ function ItemForm({ form, setForm }){
 }
 
 function App(){
+  const [themeKey, setThemeKey] = useState("royal_navy");
   const [scenes,setScenes]=useState(starter);
   const [view,setView]=useState("home");
   const [activeSceneId,setActiveSceneId]=useState("");
@@ -319,6 +459,12 @@ function App(){
   const [editForm,setEditForm]=useState(emptyItemForm());
   const [draggingId,setDraggingId]=useState(null);
   const sceneRef=useRef(null);
+
+  useEffect(() => {
+    for (const group of Object.values(THEME_GROUPS)) {
+      if (group[themeKey]) applyTheme(group[themeKey]);
+    }
+  }, [themeKey]);
 
   const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
   const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
@@ -352,7 +498,6 @@ function App(){
     updateItem(activeItem.id, i => ({ ...i, ...editForm, docs: mergedDocs }));
     setModal(null);
   }
-
   function startDrag(itemId, e){ e.preventDefault(); e.stopPropagation(); setDraggingId(itemId); }
   function moveDrag(e){
     if(!draggingId || !sceneRef.current) return;
@@ -370,6 +515,33 @@ function App(){
     {view==="home" && <>
       <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
       <div className="container">
+        <div className="hero" style={{cursor:"default"}}>
+          <div style={{fontSize:18,fontWeight:700}}>Hazır Tema Kütüphanesi</div>
+          <div className="muted" style={{marginTop:4}}>Temaları sınıflandırdım ve isimlendirdim</div>
+          {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
+            <div key={groupName}>
+              <div className="theme-section-title">{groupName}</div>
+              <div className="theme-grid">
+                {Object.entries(group).map(([key, theme]) => (
+                  <div key={key} className={`theme-card ${themeKey===key ? 'active' : ''}`} onClick={()=>setThemeKey(key)}>
+                    <div className="theme-preview" style={{background:`linear-gradient(135deg, ${theme.accent}, ${theme.accent2})`}} />
+                    <div>
+                      <div style={{fontWeight:700}}>{theme.label}</div>
+                      <div className="muted">{groupName}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hero" style={{cursor:"default"}}>
+          <div style={{fontSize:18,fontWeight:700}}>İkon Kapsamı</div>
+          <div className="muted" style={{marginTop:4}}>Elektronik, mobilya, beyaz eşya, mutfak, aydınlatma, kişisel ve araç kategorileri için genişletilmiş çizim seti eklendi.</div>
+          <div className="hint">Listeye eklenmeyen özel ürünler şimdilik genel kutu ikonuyla görünür.</div>
+        </div>
+
         {scenes.map(s=><div key={s.id} className="hero" onClick={()=>goScene(s.id)}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}
       </div>
       {modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}

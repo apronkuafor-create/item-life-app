@@ -283,7 +283,7 @@ const COLOR_HEX = {
   "Pembe":"#ec4899","Turuncu":"#f97316","Kahverengi":"#8b5e3c","Şeffaf":"#94a3b8"
 };
 
-const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", tv:"📺", sofa:"🛋️", lamp:"💡", fridge:"🧊", laptop:"💻", bed:"🛏️", phone:"📱", table:"🪑", monitor:"🖥️", speaker:"🔊", ac:"❄️", washer:"🧺", coffee:"☕", microwave:"📟", oven:"🔥", bike:"🚲", watch:"⌚", bag:"👜", glasses:"👓", wallet:"👛", game:"🎮", modem:"📡", default:"📦" };
+const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", default:"📦" };
 
 const starter = [
   { id:"1", name:"Evim", subs:[
@@ -300,30 +300,30 @@ function emptyItemForm(){ return { category:"", selectedName:"", customName:"", 
 
 function detectIcon(name="", type=""){
   const t=(name+" "+type).toLowerCase();
-  if(t.includes("telev")) return icons.tv;
-  if(t.includes("koltuk")||t.includes("kanepe")) return icons.sofa;
-  if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return icons.lamp;
-  if(t.includes("buzdol")) return icons.fridge;
-  if(t.includes("laptop")||t.includes("bilgisayar")) return icons.laptop;
-  if(t.includes("yatak")) return icons.bed;
-  if(t.includes("telefon")) return icons.phone;
-  if(t.includes("araba")) return icons.car;
-  if(t.includes("bisiklet")) return icons.bike;
-  if(t.includes("masa")||t.includes("sandalye")) return icons.table;
-  if(t.includes("monit")) return icons.monitor;
-  if(t.includes("hoparl")||t.includes("kulaklık")) return icons.speaker;
-  if(t.includes("klima")) return icons.ac;
-  if(t.includes("çamaşır")) return icons.washer;
-  if(t.includes("kahve")) return icons.coffee;
-  if(t.includes("mikrodalga")) return icons.microwave;
-  if(t.includes("fırın")||t.includes("airfryer")||t.includes("tost")) return icons.oven;
-  if(t.includes("saat")) return icons.watch;
-  if(t.includes("çanta")||t.includes("valiz")) return icons.bag;
-  if(t.includes("gözlük")) return icons.glasses;
-  if(t.includes("cüzdan")) return icons.wallet;
-  if(t.includes("oyun")) return icons.game;
-  if(t.includes("modem")) return icons.modem;
-  return icons.default;
+  if(t.includes("telev")) return "tv";
+  if(t.includes("koltuk")||t.includes("kanepe")) return "sofa";
+  if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return "lamp";
+  if(t.includes("buzdol")) return "fridge";
+  if(t.includes("laptop")||t.includes("bilgisayar")) return "laptop";
+  if(t.includes("yatak")) return "bed";
+  if(t.includes("telefon")) return "phone";
+  if(t.includes("araba")) return "car";
+  if(t.includes("bisiklet")) return "bike";
+  if(t.includes("masa")||t.includes("sandalye")) return "table";
+  if(t.includes("monit")) return "monitor";
+  if(t.includes("hoparl")||t.includes("kulaklık")) return "speaker";
+  if(t.includes("klima")) return "ac";
+  if(t.includes("çamaşır")) return "washer";
+  if(t.includes("kahve")) return "coffee";
+  if(t.includes("mikrodalga")) return "microwave";
+  if(t.includes("fırın")||t.includes("airfryer")||t.includes("tost")) return "oven";
+  if(t.includes("saat")) return "watch";
+  if(t.includes("çanta")||t.includes("valiz")) return "bag";
+  if(t.includes("gözlük")) return "glasses";
+  if(t.includes("cüzdan")) return "wallet";
+  if(t.includes("oyun")) return "game";
+  if(t.includes("modem")) return "modem";
+  return "box";
 }
 function detectSceneIcon(name=""){
   const t=name.toLowerCase();
@@ -339,6 +339,109 @@ function defaultPos(index){
 }
 function iconBg(color){ const c = COLOR_HEX[color] || "#475569"; return `linear-gradient(145deg, color-mix(in srgb, ${c} 30%, #fff) 0%, color-mix(in srgb, ${c} 72%, #111) 100%)`; }
 function iconBorder(color){ return COLOR_HEX[color] || "#333"; }
+
+
+function ProductGlyph({ kind, color }) {
+  const stroke = "rgba(255,255,255,.92)";
+  const fill = color || "#64748b";
+  const common = { fill:"none", stroke, strokeWidth:2.2, strokeLinecap:"round", strokeLinejoin:"round" };
+  switch(kind){
+    case "phone":
+      return <svg viewBox="0 0 64 64" width="42" height="42">
+        <rect x="20" y="8" width="24" height="48" rx="6" fill={fill} opacity=".28" stroke={stroke} strokeWidth="2.2"/>
+        <rect x="24" y="14" width="16" height="32" rx="2.5" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
+        <circle cx="32" cy="51" r="2" fill={stroke}/>
+      </svg>;
+    case "tv":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="11" y="13" width="42" height="27" rx="4" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M26 47h12M32 40v7" {...common}/>
+        <path d="M20 8l12 8 12-8" {...common}/>
+      </svg>;
+    case "laptop":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="16" y="14" width="32" height="22" rx="3.5" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M10 42h44l-4 6H14z" fill={fill} opacity=".28" stroke={stroke} strokeWidth="2.2"/>
+      </svg>;
+    case "fridge":
+      return <svg viewBox="0 0 64 64" width="42" height="42">
+        <rect x="20" y="8" width="24" height="48" rx="4" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M20 28h24" {...common}/>
+        <path d="M39 18v6M39 35v7" {...common}/>
+      </svg>;
+    case "sofa":
+      return <svg viewBox="0 0 64 64" width="46" height="46">
+        <path d="M16 30c0-6 4-10 10-10h12c6 0 10 4 10 10v12H16z" fill={fill} opacity=".26" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M12 28v16M52 28v16M12 44h40M18 44v6M46 44v6" {...common}/>
+      </svg>;
+    case "lamp":
+      return <svg viewBox="0 0 64 64" width="40" height="40">
+        <path d="M22 28h20L36 16H28z" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M32 28v18M22 50h20" {...common}/>
+      </svg>;
+    case "monitor":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="12" y="12" width="40" height="24" rx="3.5" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M32 36v8M24 48h16" {...common}/>
+      </svg>;
+    case "speaker":
+      return <svg viewBox="0 0 64 64" width="40" height="40">
+        <rect x="20" y="10" width="24" height="44" rx="5" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <circle cx="32" cy="24" r="5.5" {...common}/>
+        <circle cx="32" cy="40" r="9" {...common}/>
+      </svg>;
+    case "table":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <path d="M14 22h36v6H14z" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M18 28v20M46 28v20" {...common}/>
+      </svg>;
+    case "bed":
+      return <svg viewBox="0 0 64 64" width="46" height="46">
+        <path d="M12 26h40v18H12z" fill={fill} opacity=".24" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M12 20h14v6H12zM12 44v6M52 44v6" {...common}/>
+      </svg>;
+    case "ac":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="10" y="16" width="44" height="14" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M18 36c3 2 3 6 0 8M30 36c3 2 3 6 0 8M42 36c3 2 3 6 0 8" {...common}/>
+      </svg>;
+    case "washer":
+      return <svg viewBox="0 0 64 64" width="42" height="42">
+        <rect x="16" y="10" width="32" height="44" rx="4" fill={fill} opacity=".23" stroke={stroke} strokeWidth="2.2"/>
+        <circle cx="32" cy="33" r="10" {...common}/>
+        <path d="M20 17h4M28 17h16" {...common}/>
+      </svg>;
+    case "coffee":
+      return <svg viewBox="0 0 64 64" width="40" height="40">
+        <path d="M18 24h22v16a8 8 0 0 1-8 8h-6a8 8 0 0 1-8-8z" fill={fill} opacity=".25" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M40 28h6a4 4 0 0 1 0 8h-6M24 14c0 3-2 3-2 6M32 14c0 3-2 3-2 6" {...common}/>
+      </svg>;
+    case "microwave":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="10" y="18" width="44" height="26" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <rect x="16" y="24" width="22" height="14" rx="2" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
+        <path d="M45 25v2M45 31v2M45 37v2" {...common}/>
+      </svg>;
+    case "oven":
+      return <svg viewBox="0 0 64 64" width="44" height="44">
+        <rect x="16" y="12" width="32" height="40" rx="4" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <rect x="22" y="26" width="20" height="16" rx="2" fill="rgba(255,255,255,.08)" stroke={stroke} strokeWidth="1.8"/>
+        <path d="M22 18h3M29 18h3M36 18h3" {...common}/>
+      </svg>;
+    case "car":
+      return <svg viewBox="0 0 64 64" width="46" height="46">
+        <path d="M14 36l4-10h28l4 10v8H14z" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <circle cx="22" cy="46" r="4" fill={stroke}/>
+        <circle cx="42" cy="46" r="4" fill={stroke}/>
+        <path d="M22 26l5-8h10l5 8" {...common}/>
+      </svg>;
+    default:
+      return <svg viewBox="0 0 64 64" width="40" height="40">
+        <path d="M18 20l14-8 14 8v22l-14 8-14-8z" fill={fill} opacity=".22" stroke={stroke} strokeWidth="2.2"/>
+        <path d="M18 20l14 8 14-8M32 28v22" {...common}/>
+      </svg>;
+  }
+}
 
 function applyTheme(theme){
   const root = document.documentElement;
@@ -524,7 +627,7 @@ function App(){
           >
             <div className="icon-wrap">
               <div className="color-dot"></div>
-              <div className="icon-core">{detectIcon(item.name,item.type)}</div>
+              <div className="icon-core"><ProductGlyph kind={detectIcon(item.name,item.type)} color={col} /></div>
             </div>
             <div className="item-name">{item.name}</div>
             {item.model && <div className="item-model">{item.model}</div>}
@@ -548,7 +651,7 @@ function App(){
           <div style={{display:"flex", justifyContent:"center", marginBottom:12}}>
             <div style={{'--itemColor': COLOR_HEX[activeItem.color] || '#64748b'}} className="icon-wrap">
               <div className="color-dot"></div>
-              <div className="icon-core">{detectIcon(activeItem.name,activeItem.type)}</div>
+              <div className="icon-core"><ProductGlyph kind={detectIcon(activeItem.name,activeItem.type)} color={COLOR_HEX[activeItem.color] || "#64748b"} /></div>
             </div>
           </div>
           <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>

@@ -17,7 +17,6 @@
     .btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
     .btn-primary { background:#6366f1; color:#fff; }
     .btn-dark { background:#141416; color:#fff; border:1px solid #2a2a2a; }
-    .btn-ghost { background:transparent; color:#fff; border:1px solid #2a2a2a; }
     .muted { color:#888; font-size:12px; }
     .hero-banner { background:linear-gradient(135deg,#171723,#0e0e14); border:1px solid #242436; border-radius:20px; padding:16px; margin-bottom:14px; }
     .hero-grid { display:grid; grid-template-columns: 72px 1fr; gap:14px; align-items:center; }
@@ -29,8 +28,7 @@
     .scene-grid { position:absolute; inset:0; background-image:
       linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 48px 48px;
-    }
+      background-size: 48px 48px; }
     .scene-frame { position:absolute; inset:18px; border:2px solid rgba(255,255,255,0.10); border-radius:14px; }
     .room-label { position:absolute; top:14px; left:14px; background:rgba(0,0,0,.58); padding:7px 14px; border-radius:10px; font-size:14px; font-weight:700; z-index:5; }
     .item-node { position:absolute; transform:translate(-50%,-50%); cursor:pointer; text-align:center; z-index:4; }
@@ -38,680 +36,157 @@
     .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.9); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .grid1 { display:grid; grid-template-columns:1fr; gap:8px; }
     .mini { background:#141416; border:1px solid #1e1e22; border-radius:12px; padding:12px 14px; }
     .timeline { padding-bottom:12px; position:relative; display:flex; gap:10px; }
     .dot { width:8px; height:8px; border-radius:99px; margin-top:4px; background:#6366f1; flex-shrink:0; }
     .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; padding:16px; z-index:999; }
-    .modal { width:100%; max-width:520px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
+    .modal { width:100%; max-width:560px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
     input, select, textarea { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
     textarea { min-height: 84px; resize: vertical; }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px; }
-    .badge { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:99px; font-size:12px; font-weight:700; }
   </style>
 </head>
 <body>
 <div id="root"></div>
-
 <script type="text/babel">
 const { useMemo, useState } = React;
 
-const icons = {
-  home: "🏠",
-  office: "🏢",
-  shop: "🏬",
-  car: "🚗",
-  tv: "📺",
-  sofa: "🛋️",
-  lamp: "💡",
-  fridge: "🧊",
-  laptop: "💻",
-  bed: "🛏️",
-  phone: "📱",
-  table: "🪑",
-  default: "📦",
+const ITEM_CATEGORIES = {
+  "Elektronik Eşyalar": [
+    { name: "Televizyon", type: "Elektronik" },
+    { name: "Laptop", type: "Elektronik" },
+    { name: "Telefon", type: "Elektronik" },
+    { name: "Tablet", type: "Elektronik" },
+    { name: "Monitör", type: "Elektronik" },
+    { name: "Hoparlör", type: "Elektronik" },
+    { name: "Klima", type: "Elektronik" }
+  ],
+  "Mobilyalar": [
+    { name: "Koltuk Takımı", type: "Mobilya" },
+    { name: "Kanepe", type: "Mobilya" },
+    { name: "Masa", type: "Mobilya" },
+    { name: "Sandalye", type: "Mobilya" },
+    { name: "Yatak", type: "Mobilya" },
+    { name: "Dolap", type: "Mobilya" },
+    { name: "Kitaplık", type: "Mobilya" }
+  ],
+  "Beyaz Eşyalar": [
+    { name: "Buzdolabı", type: "Beyaz Eşya" },
+    { name: "Çamaşır Makinesi", type: "Beyaz Eşya" },
+    { name: "Bulaşık Makinesi", type: "Beyaz Eşya" },
+    { name: "Kurutma Makinesi", type: "Beyaz Eşya" },
+    { name: "Fırın", type: "Beyaz Eşya" }
+  ],
+  "Mutfak Eşyaları": [
+    { name: "Mikrodalga", type: "Mutfak Eşyası" },
+    { name: "Kahve Makinesi", type: "Mutfak Eşyası" },
+    { name: "Blender", type: "Mutfak Eşyası" },
+    { name: "Su Isıtıcı", type: "Mutfak Eşyası" }
+  ],
+  "Aydınlatma": [
+    { name: "Abajur", type: "Aydınlatma" },
+    { name: "Lamba", type: "Aydınlatma" },
+    { name: "Avize", type: "Aydınlatma" }
+  ],
+  "Araç Eşyaları": [
+    { name: "Araba", type: "Araç" },
+    { name: "Motosiklet", type: "Araç" },
+    { name: "Bisiklet", type: "Araç" }
+  ],
+  "Diğer": [
+    { name: "Özel Eşya", type: "Diğer" }
+  ]
 };
 
-const starter = [
-  {
-    id: "1",
-    name: "Evim",
-    subs: [
-      {
-        id: "s1",
-        name: "Salon",
-        items: [
-          {
-            id: "i1",
-            name: "Televizyon",
-            type: "Elektronik",
-            acquisitionType: "Satın alındı",
-            acquisitionDate: "2026-04-12",
-            purchasePrice: "45000",
-            status: "Kullanımda",
-            brand: "Samsung",
-            model: "QLED 65",
-            identifier: "SN-10023",
-            owner: "Benim",
-            location: "Salon",
-            warrantyEnd: "2026-05-15",
-            supplier: "Teknosa",
-            currentStage: "Kullanımda",
-            serviceStatus: "",
-            replacementApproved: "",
-            replacementName: "",
-            replacementBrand: "",
-            replacementModel: "",
-            replacementDate: "",
-            disposalStatus: "",
-            notes: "",
-            events: [{ id: "e1", date: "12.04.2026", text: "Sisteme eklendi" }],
-            docs: [{ id: "d1", name: "Fatura.pdf", type: "Fatura" }]
-          },
-          {
-            id: "i2",
-            name: "Koltuk Takımı",
-            type: "Mobilya",
-            acquisitionType: "Satın alındı",
-            acquisitionDate: "2026-03-10",
-            purchasePrice: "32000",
-            status: "Kullanımda",
-            brand: "İstikbal",
-            model: "L Koltuk",
-            identifier: "",
-            owner: "Aile",
-            location: "Salon",
-            warrantyEnd: "2027-03-10",
-            supplier: "",
-            currentStage: "Kullanımda",
-            serviceStatus: "",
-            replacementApproved: "",
-            replacementName: "",
-            replacementBrand: "",
-            replacementModel: "",
-            replacementDate: "",
-            disposalStatus: "",
-            notes: "",
-            events: [{ id: "e2", date: "10.03.2026", text: "Eklendi" }],
-            docs: []
-          }
-        ]
-      },
-      {
-        id: "s2",
-        name: "Mutfak",
-        items: [
-          {
-            id: "i3",
-            name: "Buzdolabı",
-            type: "Beyaz Eşya",
-            acquisitionType: "Satın alındı",
-            acquisitionDate: "2026-01-20",
-            purchasePrice: "28000",
-            status: "Kullanımda",
-            brand: "Arçelik",
-            model: "No Frost",
-            identifier: "",
-            owner: "Benim",
-            location: "Mutfak",
-            warrantyEnd: "2028-01-20",
-            supplier: "",
-            currentStage: "Kullanımda",
-            serviceStatus: "",
-            replacementApproved: "",
-            replacementName: "",
-            replacementBrand: "",
-            replacementModel: "",
-            replacementDate: "",
-            disposalStatus: "",
-            notes: "",
-            events: [{ id: "e3", date: "20.01.2026", text: "Eklendi" }],
-            docs: []
-          }
-        ]
-      }
-    ]
+const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", tv:"📺", sofa:"🛋️", lamp:"💡", fridge:"🧊", laptop:"💻", bed:"🛏️", phone:"📱", table:"🪑", monitor:"🖥️", speaker:"🔊", ac:"❄️", washer:"🧺", coffee:"☕", microwave:"📟", oven:"🔥", bike:"🚲", default:"📦" };
+
+const starter = [{ id:"1", name:"Evim", subs:[{ id:"s1", name:"Salon", items:[{ id:"i1", category:"Elektronik Eşyalar", name:"Televizyon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", status:"Kullanımda", brand:"Samsung", model:"QLED 65", identifier:"SN-10023", owner:"Benim", location:"Salon", warrantyEnd:"2026-05-15", supplier:"Teknosa", currentStage:"Kullanımda", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"", events:[{ id:"e1", date:"12.04.2026", text:"Sisteme eklendi" }], docs:[{ id:"d1", name:"Fatura.pdf", type:"Fatura" }] }, { id:"i2", category:"Mobilyalar", name:"Koltuk Takımı", type:"Mobilya", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", status:"Kullanımda", brand:"İstikbal", model:"L Koltuk", identifier:"", owner:"Aile", location:"Salon", warrantyEnd:"2027-03-10", supplier:"", currentStage:"Kullanımda", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"", events:[{ id:"e2", date:"10.03.2026", text:"Eklendi" }], docs:[] }] }] }];
+
+function mkid(){ return Math.random().toString(36).slice(2,10); }
+function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
+function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", status:"Kullanımda", brand:"", model:"", identifier:"", owner:"", location:"", warrantyEnd:"", supplier:"", currentStage:"Satın alındı", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"" }; }
+
+function detectIcon(name="", type=""){ const t=(name+" "+type).toLowerCase(); if(t.includes("telev")) return icons.tv; if(t.includes("koltuk")||t.includes("kanepe")) return icons.sofa; if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return icons.lamp; if(t.includes("buzdol")) return icons.fridge; if(t.includes("laptop")||t.includes("bilgisayar")) return icons.laptop; if(t.includes("yatak")) return icons.bed; if(t.includes("telefon")) return icons.phone; if(t.includes("araba")) return icons.car; if(t.includes("bisiklet")) return icons.bike; if(t.includes("masa")||t.includes("sandalye")) return icons.table; if(t.includes("monit")) return icons.monitor; if(t.includes("hoparl")) return icons.speaker; if(t.includes("klima")) return icons.ac; if(t.includes("çamaşır")) return icons.washer; if(t.includes("kahve")) return icons.coffee; if(t.includes("mikrodalga")) return icons.microwave; if(t.includes("fırın")) return icons.oven; return icons.default; }
+function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return icons.home; if(t.includes("iş")||t.includes("ofis")) return icons.office; if(t.includes("mağaza")||t.includes("dükkan")||t.includes("salon")) return icons.shop; if(t.includes("araç")||t.includes("garaj")) return icons.car; return icons.default; }
+function positions(items){ const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}]; return items.map((item,i)=>({ item, ...(base[i]||{x:20+(i%3)*25,y:85}) })); }
+function parseTRDate(dateStr){ if(!dateStr) return null; if(dateStr.includes(".")){ const [d,m,y]=dateStr.split("."); return new Date(+y,+m-1,+d);} if(dateStr.includes("-")) return new Date(dateStr); return null; }
+function daysUntil(dateStr){ const date=parseTRDate(dateStr); if(!date||isNaN(date)) return null; const today=new Date(); today.setHours(0,0,0,0); date.setHours(0,0,0,0); return Math.round((date-today)/(1000*60*60*24)); }
+
+function Modal({ title, onClose, children }){ return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={(e)=>e.stopPropagation()}><div className="row" style={{marginBottom:16}}><h3>{title}</h3><button className="btn btn-dark" onClick={onClose}>Kapat</button></div>{children}</div></div>; }
+function TopBar({ title, sub, onBack, right }){ return <div className="topbar">{onBack&&<button className="btn btn-dark" onClick={onBack}>←</button>}<div style={{flex:1}}><div style={{fontSize:17,fontWeight:700}}>{title}</div>{sub&&<div className="muted" style={{marginTop:2}}>{sub}</div>}</div>{right}</div>; }
+
+function ItemForm({ form, setForm }){
+  const categoryOptions=Object.keys(ITEM_CATEGORIES);
+  const itemOptions=form.category?ITEM_CATEGORIES[form.category]:[];
+  function setField(key,value){ setForm(prev=>({ ...prev, [key]: value })); }
+  function handleCategoryChange(value){ setForm(prev=>({ ...prev, category:value, selectedName:"", customName:"", name:"", type:"" })); }
+  function handleItemSelect(value){
+    const found=(ITEM_CATEGORIES[form.category]||[]).find(x=>x.name===value);
+    if(value==="Özel Eşya"){ setForm(prev=>({ ...prev, selectedName:value, name:"", type:"Diğer" })); return; }
+    setForm(prev=>({ ...prev, selectedName:value, name:found?found.name:value, type:found?found.type:prev.type }));
   }
-];
-
-const emptyItemForm = () => ({
-  name: "",
-  type: "",
-  acquisitionType: "Satın alındı",
-  acquisitionDate: tdy(),
-  purchasePrice: "",
-  status: "Kullanımda",
-  brand: "",
-  model: "",
-  identifier: "",
-  owner: "",
-  location: "",
-  warrantyEnd: "",
-  supplier: "",
-  currentStage: "Satın alındı",
-  serviceStatus: "",
-  replacementApproved: "",
-  replacementName: "",
-  replacementBrand: "",
-  replacementModel: "",
-  replacementDate: "",
-  disposalStatus: "",
-  notes: ""
-});
-
-function mkid() { return Math.random().toString(36).slice(2, 10); }
-function tdy() { return new Date().toLocaleDateString("tr-TR"); }
-
-function detectIcon(name = "", type = "") {
-  const t = `${name} ${type}`.toLowerCase();
-  if (t.includes("telev")) return icons.tv;
-  if (t.includes("koltuk") || t.includes("kanepe")) return icons.sofa;
-  if (t.includes("abajur") || t.includes("lamba")) return icons.lamp;
-  if (t.includes("buzdol")) return icons.fridge;
-  if (t.includes("laptop") || t.includes("bilgisayar")) return icons.laptop;
-  if (t.includes("yatak")) return icons.bed;
-  if (t.includes("telefon")) return icons.phone;
-  if (t.includes("araba") || t.includes("araç")) return icons.car;
-  if (t.includes("masa")) return icons.table;
-  return icons.default;
-}
-
-function detectSceneIcon(name = "") {
-  const t = name.toLowerCase();
-  if (t.includes("ev")) return icons.home;
-  if (t.includes("iş") || t.includes("ofis")) return icons.office;
-  if (t.includes("mağaza") || t.includes("dükkan") || t.includes("salon")) return icons.shop;
-  if (t.includes("araç") || t.includes("garaj")) return icons.car;
-  return icons.default;
-}
-
-function positions(items) {
-  const base = [
-    { x: 50, y: 18 },
-    { x: 50, y: 54 },
-    { x: 18, y: 35 },
-    { x: 82, y: 35 },
-    { x: 18, y: 72 },
-    { x: 82, y: 72 },
-    { x: 34, y: 82 },
-    { x: 66, y: 82 },
-  ];
-  return items.map((item, i) => ({ item, ...(base[i] || { x: 20 + (i%3)*25, y: 85 }) }));
-}
-
-function parseTRDate(dateStr) {
-  if (!dateStr) return null;
-  if (dateStr.includes(".")) {
-    const [d,m,y] = dateStr.split(".");
-    return new Date(+y, +m-1, +d);
-  }
-  if (dateStr.includes("-")) {
-    return new Date(dateStr);
-  }
-  return null;
-}
-
-function daysUntil(dateStr) {
-  const date = parseTRDate(dateStr);
-  if (!date || isNaN(date)) return null;
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  date.setHours(0,0,0,0);
-  return Math.round((date - today) / (1000 * 60 * 60 * 24));
-}
-
-function Modal({ title, onClose, children }) {
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e)=>e.stopPropagation()}>
-        <div className="row" style={{marginBottom:16}}>
-          <h3>{title}</h3>
-          <button className="btn btn-dark" onClick={onClose}>Kapat</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function TopBar({ title, sub, onBack, right }) {
-  return (
-    <div className="topbar">
-      {onBack && <button className="btn btn-dark" onClick={onBack}>←</button>}
-      <div style={{flex:1}}>
-        <div style={{fontSize:17, fontWeight:700}}>{title}</div>
-        {sub && <div className="muted" style={{marginTop:2}}>{sub}</div>}
-      </div>
-      {right}
-    </div>
-  );
-}
-
-function ItemForm({ form, setForm }) {
-  function setField(key, value) {
-    setForm(prev => ({ ...prev, [key]: value }));
-  }
-  return (
-    <>
+  function handleCustomName(value){ setForm(prev=>({ ...prev, customName:value, name:value })); }
+  return <>
+    <div className="section" style={{marginBottom:10}}>
+      <div style={{fontWeight:700,marginBottom:10}}>Kategori ve Eşya Seçimi</div>
       <div className="grid2">
-        <label><div className="muted" style={{marginBottom:4}}>Eşya Adı</div><input value={form.name} onChange={e=>setField("name", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} onChange={e=>setField("type", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate", e.target.value)} placeholder="18.04.2026" /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Garanti Bitiş</div><input value={form.warrantyEnd} onChange={e=>setField("warrantyEnd", e.target.value)} placeholder="18.06.2026" /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Tedarikçi / Satıcı</div><input value={form.supplier} onChange={e=>setField("supplier", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Tanımlayıcı</div><input value={form.identifier} onChange={e=>setField("identifier", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Sahip</div><input value={form.owner} onChange={e=>setField("owner", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Konum</div><input value={form.location} onChange={e=>setField("location", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Durum</div><input value={form.status} onChange={e=>setField("status", e.target.value)} /></label>
-        <label><div className="muted" style={{marginBottom:4}}>Mevcut Aşama</div><input value={form.currentStage} onChange={e=>setField("currentStage", e.target.value)} placeholder="Satın alındı / Kullanımda / Bozuldu / Serviste..." /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Kategori</div><select value={form.category} onChange={e=>handleCategoryChange(e.target.value)}><option value="">Seçiniz</option>{categoryOptions.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
+        <label><div className="muted" style={{marginBottom:4}}>Eşya</div><select value={form.selectedName} onChange={e=>handleItemSelect(e.target.value)} disabled={!form.category}><option value="">Seçiniz</option>{itemOptions.map(i=><option key={i.name} value={i.name}>{i.name}</option>)}</select></label>
       </div>
-
-      <div className="section" style={{marginTop:8}}>
-        <div style={{fontWeight:700, marginBottom:10}}>Servis / Değişim Süreci</div>
-        <div className="grid2">
-          <label><div className="muted" style={{marginBottom:4}}>Servis Durumu</div><input value={form.serviceStatus} onChange={e=>setField("serviceStatus", e.target.value)} placeholder="Serviste, İnceleniyor..." /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Kararı</div><input value={form.replacementApproved} onChange={e=>setField("replacementApproved", e.target.value)} placeholder="Onaylandı / Reddedildi" /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Adı</div><input value={form.replacementName} onChange={e=>setField("replacementName", e.target.value)} /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Marka</div><input value={form.replacementBrand} onChange={e=>setField("replacementBrand", e.target.value)} /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Model</div><input value={form.replacementModel} onChange={e=>setField("replacementModel", e.target.value)} /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Yeni Ürün Tarihi</div><input value={form.replacementDate} onChange={e=>setField("replacementDate", e.target.value)} placeholder="18.09.2026" /></label>
-        </div>
-      </div>
-
-      <div className="section" style={{marginTop:8}}>
-        <div style={{fontWeight:700, marginBottom:10}}>Hayat Sonu / Notlar</div>
-        <div className="grid1">
-          <label><div className="muted" style={{marginBottom:4}}>Çıkış / Çöp / Hurda Durumu</div><input value={form.disposalStatus} onChange={e=>setField("disposalStatus", e.target.value)} placeholder="Kullanımda / Satıldı / Çöpe gitti / Hurda..." /></label>
-          <label><div className="muted" style={{marginBottom:4}}>Notlar</div><textarea value={form.notes} onChange={e=>setField("notes", e.target.value)} placeholder="Ürünün başına gelen önemli şeyler..." /></label>
-        </div>
-      </div>
-    </>
-  );
+      {form.selectedName==="Özel Eşya"&&<label><div className="muted" style={{marginBottom:4}}>Özel Eşya Adı</div><input value={form.customName} onChange={e=>handleCustomName(e.target.value)} placeholder="Listede olmayan eşya adı" /></label>}
+    </div>
+    <div className="grid2">
+      <label><div className="muted" style={{marginBottom:4}}>Eşya Adı</div><input value={form.name} readOnly /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} readOnly /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
+    </div>
+  </>;
 }
 
-function App() {
-  const [scenes, setScenes] = useState(starter);
-  const [view, setView] = useState("home");
-  const [activeSceneId, setActiveSceneId] = useState("");
-  const [activeRoomId, setActiveRoomId] = useState("");
-  const [activeItemId, setActiveItemId] = useState("");
-  const [modal, setModal] = useState(null);
+function App(){
+  const [scenes,setScenes]=useState(starter);
+  const [view,setView]=useState("home");
+  const [activeSceneId,setActiveSceneId]=useState("");
+  const [activeRoomId,setActiveRoomId]=useState("");
+  const [activeItemId,setActiveItemId]=useState("");
+  const [modal,setModal]=useState(null);
+  const [sceneName,setSceneName]=useState("");
+  const [roomName,setRoomName]=useState("");
+  const [itemForm,setItemForm]=useState(emptyItemForm());
 
-  const [sceneName, setSceneName] = useState("");
-  const [roomName, setRoomName] = useState("");
-  const [itemForm, setItemForm] = useState(emptyItemForm());
-  const [editForm, setEditForm] = useState(emptyItemForm());
-  const [eventDate, setEventDate] = useState(tdy());
-  const [eventText, setEventText] = useState("");
-  const [docName, setDocName] = useState("");
-  const [docType, setDocType] = useState("");
+  const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
+  const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
+  const totalValue=useMemo(()=>allItems.reduce((a,i)=>a+(parseFloat(i.purchasePrice)||0),0).toLocaleString("tr-TR"),[allItems]);
+  const activeRoom=useMemo(()=>activeScene?activeScene.subs.find(r=>r.id===activeRoomId)||null:null,[activeScene,activeRoomId]);
+  const activeItem=useMemo(()=>activeRoom?activeRoom.items.find(i=>i.id===activeItemId)||null:null,[activeRoom,activeItemId]);
 
-  const activeScene = useMemo(() => scenes.find(s => s.id === activeSceneId) || null, [scenes, activeSceneId]);
-  const allItems = useMemo(() => scenes.flatMap(s => s.subs.flatMap(r => r.items)), [scenes]);
-  const totalValue = useMemo(() => allItems.reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR"), [allItems]);
-  const activeRoom = useMemo(() => activeScene ? activeScene.subs.find(r => r.id === activeRoomId) || null : null, [activeScene, activeRoomId]);
-  const activeItem = useMemo(() => activeRoom ? activeRoom.items.find(i => i.id === activeItemId) || null : null, [activeRoom, activeItemId]);
+  function goScene(id){ setActiveSceneId(id); setView("scene"); }
+  function goRoom(id){ setActiveRoomId(id); setView("room"); }
+  function goItem(id){ setActiveItemId(id); setView("item"); }
+  function addScene(){ if(!sceneName.trim()) return; const next={id:mkid(),name:sceneName.trim(),subs:[]}; setScenes(prev=>[...prev,next]); setSceneName(""); setModal(null); }
+  function addRoom(){ if(!roomName.trim()||!activeSceneId) return; const next={id:mkid(),name:roomName.trim(),items:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:[...s.subs,next]}:s)); setRoomName(""); setModal(null); }
+  function addItem(){ if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return; const next={id:mkid(), ...itemForm, events:[], docs:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:[...r.items,next]}:r)}:s)); setItemForm(emptyItemForm()); setModal(null); }
 
-  const sceneValue = useMemo(() => activeScene ? activeScene.subs.flatMap(r => r.items).reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR") : "0", [activeScene]);
-  const expiringItems = useMemo(() => {
-    if (!activeScene) return [];
-    return activeScene.subs.flatMap(r => r.items).filter(i => {
-      const days = daysUntil(i.warrantyEnd);
-      return days !== null && days >= 0 && days <= 30;
-    });
-  }, [activeScene]);
-
-  function goScene(id) { setActiveSceneId(id); setView("scene"); }
-  function goRoom(id) { setActiveRoomId(id); setActiveItemId(""); setView("room"); }
-  function goItem(id) { setActiveItemId(id); setView("item"); }
-
-  function addScene() {
-    if (!sceneName.trim()) return;
-    const next = { id: mkid(), name: sceneName.trim(), subs: [] };
-    setScenes(prev => [...prev, next]);
-    setSceneName("");
-    setModal(null);
-    setActiveSceneId(next.id);
-    setView("scene");
+  if(view==="home"){
+    return <div><TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} /><div className="container">{scenes.map(s=><div key={s.id} className="hero-banner" onClick={()=>goScene(s.id)} style={{cursor:"pointer"}}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}</div>{modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}</div>;
   }
 
-  function addRoom() {
-    if (!roomName.trim() || !activeSceneId) return;
-    const next = { id: mkid(), name: roomName.trim(), items: [] };
-    setScenes(prev => prev.map(s => s.id === activeSceneId ? { ...s, subs: [...s.subs, next] } : s));
-    setRoomName("");
-    setModal(null);
-    setActiveRoomId(next.id);
-    setView("room");
+  if(view==="scene"&&activeScene){
+    return <div><TopBar title={activeScene.name} sub="Başlık paneli" onBack={()=>setView("home")} right={<button className="btn btn-primary" onClick={()=>setModal("room")}>+ Alt Başlık</button>} /><div className="container">{activeScene.subs.map(r=><div key={r.id} className="card" onClick={()=>goRoom(r.id)}><div className="row"><div><div style={{fontSize:16,fontWeight:700}}>{r.name}</div><div className="muted">{r.items.length} eşya</div></div><div>›</div></div></div>)}</div>{modal==="room"&&<Modal title="Yeni Alt Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div><input value={roomName} onChange={e=>setRoomName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button></Modal>}</div>;
   }
 
-  function addFullItem() {
-    if (!itemForm.name.trim() || !activeSceneId || !activeRoomId) return;
-    const next = {
-      id: mkid(),
-      ...itemForm,
-      location: itemForm.location || (activeRoom ? activeRoom.name : ""),
-      events: [{ id: mkid(), date: tdy(), text: "Sisteme eklendi" }],
-      docs: []
-    };
-    setScenes(prev => prev.map(s => s.id === activeSceneId ? {
-      ...s,
-      subs: s.subs.map(r => r.id === activeRoomId ? { ...r, items: [...r.items, next] } : r)
-    } : s));
-    setItemForm(emptyItemForm());
-    setModal(null);
-    setActiveItemId(next.id);
-    setView("item");
+  if(view==="room"&&activeRoom){
+    const placed=positions(activeRoom.items);
+    return <div><TopBar title={activeRoom.name} sub="Tam sayfa görünüm" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} /><div className="scene-page"><div className="scene-grid"></div><div className="scene-frame"></div><div className="room-label">{activeRoom.name}</div>{placed.map(({item,x,y})=><div key={item.id} className="item-node" style={{left:`${x}%`,top:`${y}%`}} onClick={()=>goItem(item.id)}><div className="icon">{detectIcon(item.name,item.type)}</div><div className="item-name">{item.name}</div></div>)}</div>{modal==="item"&&<Modal title="Yeni Eşya" onClose={()=>setModal(null)}><ItemForm form={itemForm} setForm={setItemForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={addItem}>Kaydet</button></Modal>}</div>;
   }
 
-  function updateItem(itemId, updater) {
-    setScenes(prev => prev.map(s => s.id === activeSceneId ? {
-      ...s,
-      subs: s.subs.map(r => ({ ...r, items: r.items.map(i => i.id === itemId ? updater(i) : i) }))
-    } : s));
-  }
-
-  function saveEditedItem() {
-    if (!activeItem) return;
-    updateItem(activeItem.id, i => ({ ...i, ...editForm }));
-    setModal(null);
-  }
-
-  function addEvent() {
-    if (!activeItem || !eventText.trim()) return;
-    updateItem(activeItem.id, i => ({ ...i, events: [{ id: mkid(), date: eventDate, text: eventText.trim() }, ...i.events] }));
-    setEventText("");
-    setEventDate(tdy());
-    setModal(null);
-  }
-
-  function addDoc() {
-    if (!activeItem || !docName.trim() || !docType.trim()) return;
-    updateItem(activeItem.id, i => ({ ...i, docs: [...i.docs, { id: mkid(), name: docName.trim(), type: docType.trim() }] }));
-    setDocName("");
-    setDocType("");
-    setModal(null);
-  }
-
-  if (view === "home") {
-    return (
-      <div>
-        <TopBar
-          title="Eşyamın Hayatı"
-          sub={`${allItems.length} eşya · ₺${totalValue}`}
-          right={<button className="btn btn-primary" onClick={() => setModal("scene")}>+ Başlık</button>}
-        />
-        <div className="container">
-          {scenes.map(s => {
-            const count = s.subs.reduce((a, r) => a + r.items.length, 0);
-            const total = s.subs.flatMap(r => r.items).reduce((a, i) => a + (parseFloat(i.purchasePrice) || 0), 0).toLocaleString("tr-TR");
-            const expiring = s.subs.flatMap(r => r.items).filter(i => {
-              const days = daysUntil(i.warrantyEnd);
-              return days !== null && days >= 0 && days <= 30;
-            });
-            return (
-              <div key={s.id} className="hero-banner" onClick={() => goScene(s.id)} style={{cursor:"pointer"}}>
-                <div className="hero-grid">
-                  <div className="hero-icon">{detectSceneIcon(s.name)}</div>
-                  <div>
-                    <div style={{fontSize:20, fontWeight:700}}>{s.name}</div>
-                    <div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık · {count} eşya</div>
-                  </div>
-                </div>
-                <div className="metrics">
-                  <div className="metric">
-                    <div className="muted">Toplam Satın Alma Değeri</div>
-                    <div style={{fontWeight:700, marginTop:4}}>₺{total}</div>
-                  </div>
-                  <div className="metric">
-                    <div className="muted">Garanti Uyarısı</div>
-                    <div style={{fontWeight:700, marginTop:4}}>{expiring.length} eşya</div>
-                  </div>
-                </div>
-                {expiring.length > 0 && (
-                  <div className="warn-box">
-                    Garantisi bitmek üzere: {expiring.map(i => i.name).join(", ")}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {modal === "scene" && (
-          <Modal title="Yeni Başlık" onClose={() => setModal(null)}>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Başlık Adı</div>
-              <input value={sceneName} onChange={e => setSceneName(e.target.value)} placeholder="Evim, İş Yerim..." />
-            </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button>
-          </Modal>
-        )}
-      </div>
-    );
-  }
-
-  if (view === "scene" && activeScene) {
-    return (
-      <div>
-        <TopBar
-          title={activeScene.name}
-          sub="Başlık paneli"
-          onBack={() => setView("home")}
-          right={<button className="btn btn-primary" onClick={() => setModal("room")}>+ Alt Başlık</button>}
-        />
-        <div className="container">
-          <div className="hero-banner">
-            <div className="hero-grid">
-              <div className="hero-icon">{detectSceneIcon(activeScene.name)}</div>
-              <div>
-                <div style={{fontSize:20, fontWeight:700}}>{activeScene.name}</div>
-                <div className="muted" style={{marginTop:4}}>Bu başlık içindeki tüm eşyaların özeti</div>
-              </div>
-            </div>
-            <div className="metrics">
-              <div className="metric">
-                <div className="muted">Toplam Satın Alma Değeri</div>
-                <div style={{fontWeight:700, marginTop:4}}>₺{sceneValue}</div>
-              </div>
-              <div className="metric">
-                <div className="muted">Garanti Uyarısı</div>
-                <div style={{fontWeight:700, marginTop:4}}>{expiringItems.length} eşya</div>
-              </div>
-            </div>
-            {expiringItems.length > 0 && (
-              <div className="warn-box">
-                {expiringItems.map(i => {
-                  const d = daysUntil(i.warrantyEnd);
-                  return `${i.name} (${d} gün kaldı)`;
-                }).join(" · ")}
-              </div>
-            )}
-          </div>
-
-          {activeScene.subs.length === 0 && <div className="muted">Henüz alt başlık eklenmedi.</div>}
-          {activeScene.subs.map(r => (
-            <div key={r.id} className="card" onClick={() => goRoom(r.id)}>
-              <div className="row">
-                <div>
-                  <div style={{fontSize:16, fontWeight:700}}>{r.name}</div>
-                  <div className="muted" style={{marginTop:4}}>{r.items.length} eşya</div>
-                </div>
-                <div style={{fontSize:18}}>›</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {modal === "room" && (
-          <Modal title="Yeni Alt Başlık" onClose={() => setModal(null)}>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div>
-              <input value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="Salon, Mutfak..." />
-            </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button>
-          </Modal>
-        )}
-      </div>
-    );
-  }
-
-  if (view === "room" && activeRoom) {
-    const placed = positions(activeRoom.items);
-    return (
-      <div>
-        <TopBar
-          title={activeRoom.name}
-          sub={`${activeScene ? activeScene.name : ""} içinde tam sayfa görünüm`}
-          onBack={() => setView("scene")}
-          right={<button className="btn btn-primary" onClick={() => setModal("itemAdd")}>+ Eşya</button>}
-        />
-        <div className="scene-page">
-          <div className="scene-grid"></div>
-          <div className="scene-frame"></div>
-          <div className="room-label">{activeRoom.name}</div>
-          {placed.map(({ item, x, y }) => (
-            <div key={item.id} className="item-node" style={{ left: `${x}%`, top: `${y}%` }} onClick={() => goItem(item.id)}>
-              <div className="icon">{detectIcon(item.name, item.type)}</div>
-              <div className="item-name">{item.name}</div>
-            </div>
-          ))}
-          {activeRoom.items.length === 0 && <div className="empty">Bu alanda henüz eşya yok</div>}
-        </div>
-        {modal === "itemAdd" && (
-          <Modal title="Yeni Eşya" onClose={() => setModal(null)}>
-            <ItemForm form={itemForm} setForm={setItemForm} />
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addFullItem}>Kaydet</button>
-          </Modal>
-        )}
-      </div>
-    );
-  }
-
-  if (view === "item" && activeItem) {
-    return (
-      <div>
-        <TopBar
-          title={activeItem.name}
-          sub="Eşyanın hayatı tam sayfa"
-          onBack={() => setView("room")}
-          right={
-            <div style={{display:"flex", gap:8}}>
-              <button className="btn btn-dark" onClick={() => setModal("doc")}>Belge</button>
-              <button className="btn btn-dark" onClick={() => { setEditForm({...activeItem}); setModal("editItem"); }}>Düzenle</button>
-              <button className="btn btn-primary" onClick={() => setModal("event")}>Olay</button>
-            </div>
-          }
-        />
-        <div className="container">
-          <div style={{textAlign:"center", marginBottom:20}}>
-            <div style={{fontSize:78}}>{detectIcon(activeItem.name, activeItem.type)}</div>
-            <div style={{fontSize:26, fontWeight:700, marginTop:8}}>{activeItem.name}</div>
-            <div style={{marginTop:8}}>
-              <span className="badge" style={{background:"#1d2238", color:"#9fb0ff"}}>{activeItem.currentStage || "Kayıtlı"}</span>
-            </div>
-          </div>
-
-          <div className="grid2" style={{marginBottom:20}}>
-            {[
-              ["Marka", `${activeItem.brand || "-"} ${activeItem.model || ""}`.trim() || "-"],
-              ["Tanımlayıcı", activeItem.identifier || "-"],
-              ["Edinim", activeItem.acquisitionType || "-"],
-              ["Tarih", activeItem.acquisitionDate || "-"],
-              ["Satın Alma Değeri", activeItem.purchasePrice ? `₺${parseFloat(activeItem.purchasePrice).toLocaleString("tr-TR")}` : "-"],
-              ["Garanti Bitiş", activeItem.warrantyEnd || "-"],
-              ["Sahip", activeItem.owner || "-"],
-              ["Konum", activeItem.location || "-"],
-              ["Servis Durumu", activeItem.serviceStatus || "-"],
-              ["Yeni Ürün Kararı", activeItem.replacementApproved || "-"],
-              ["Yeni Ürün", [activeItem.replacementName, activeItem.replacementBrand, activeItem.replacementModel].filter(Boolean).join(" ") || "-"],
-              ["Çıkış Durumu", activeItem.disposalStatus || "-"],
-            ].map(([k,v], i) => (
-              <div key={i} className="mini">
-                <div className="muted" style={{marginBottom:4}}>{k}</div>
-                <div style={{fontWeight:700, fontSize:13}}>{v}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="section">
-            <div style={{fontWeight:700, marginBottom:10}}>Belgeler ({activeItem.docs.length})</div>
-            {activeItem.docs.length === 0 && <div className="muted">Belge yok</div>}
-            {activeItem.docs.map(d => (
-              <div key={d.id} className="card" style={{marginBottom:6, padding:"10px 12px", cursor:"default"}}>
-                <div style={{fontSize:12, fontWeight:700}}>{d.name}</div>
-                <div className="muted" style={{marginTop:2}}>{d.type}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="section">
-            <div style={{fontWeight:700, marginBottom:10}}>Hayat Akışı ({activeItem.events.length})</div>
-            {activeItem.events.map(ev => (
-              <div key={ev.id} className="timeline">
-                <div className="dot"></div>
-                <div>
-                  <div className="muted" style={{marginBottom:2}}>{ev.date}</div>
-                  <div style={{fontSize:13}}>{ev.text}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="section">
-            <div style={{fontWeight:700, marginBottom:10}}>Notlar</div>
-            <div className="muted" style={{fontSize:13, lineHeight:1.5}}>{activeItem.notes || "Not yok"}</div>
-          </div>
-        </div>
-
-        {modal === "event" && (
-          <Modal title="Olay Ekle" onClose={() => setModal(null)}>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Tarih</div>
-              <input value={eventDate} onChange={e => setEventDate(e.target.value)} />
-            </label>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Açıklama</div>
-              <input value={eventText} onChange={e => setEventText(e.target.value)} placeholder="Servise gönderildi..." />
-            </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addEvent}>Ekle</button>
-          </Modal>
-        )}
-
-        {modal === "doc" && (
-          <Modal title="Belge Ekle" onClose={() => setModal(null)}>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Tür</div>
-              <select value={docType} onChange={e => setDocType(e.target.value)}>
-                <option value="">Seçiniz</option>
-                <option value="Fatura">Fatura</option>
-                <option value="Garanti">Garanti</option>
-                <option value="Ruhsat">Ruhsat</option>
-                <option value="Sigorta">Sigorta</option>
-                <option value="Sözleşme">Sözleşme</option>
-                <option value="Diğer">Diğer</option>
-              </select>
-            </label>
-            <label>
-              <div className="muted" style={{marginBottom:4}}>Ad</div>
-              <input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Fatura.pdf" />
-            </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addDoc}>Ekle</button>
-          </Modal>
-        )}
-
-        {modal === "editItem" && (
-          <Modal title="Eşya Bilgilerini Düzenle" onClose={() => setModal(null)}>
-            <ItemForm form={editForm} setForm={setEditForm} />
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={saveEditedItem}>Kaydet</button>
-          </Modal>
-        )}
-      </div>
-    );
+  if(view==="item"&&activeItem){
+    return <div><TopBar title={activeItem.name} sub="Eşyanın hayatı" onBack={()=>setView("room")} /><div className="container"><div className="card"><div style={{fontSize:40}}>{detectIcon(activeItem.name,activeItem.type)}</div><div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div><div className="muted">{activeItem.category}</div></div></div></div>;
   }
 
   return <div className="container">Boş ekran</div>;

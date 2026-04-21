@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; font-family: Arial, sans-serif; background: #0a0a0c; color: #fff; }
     .topbar { padding: 14px 16px; border-bottom: 1px solid #1a1a1e; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:#0a0a0c; z-index:10; }
     .container { padding: 16px; }
@@ -21,9 +21,6 @@
     .hero-banner { background:linear-gradient(135deg,#171723,#0e0e14); border:1px solid #242436; border-radius:20px; padding:16px; margin-bottom:14px; }
     .hero-grid { display:grid; grid-template-columns: 72px 1fr; gap:14px; align-items:center; }
     .hero-icon { width:72px; height:72px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:38px; background:#222236; }
-    .metrics { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:12px; }
-    .metric { background:#101018; border:1px solid #222235; border-radius:12px; padding:12px; }
-    .warn-box { margin-top:12px; background:#2a1600; border:1px solid #6b3e00; color:#ffd08a; border-radius:12px; padding:12px; }
     .scene-page { min-height: calc(100vh - 57px); background:#161616; position:relative; overflow:hidden; }
     .scene-grid { position:absolute; inset:0; background-image:
       linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
@@ -31,7 +28,8 @@
       background-size: 48px 48px; }
     .scene-frame { position:absolute; inset:18px; border:2px solid rgba(255,255,255,0.10); border-radius:14px; }
     .room-label { position:absolute; top:14px; left:14px; background:rgba(0,0,0,.58); padding:7px 14px; border-radius:10px; font-size:14px; font-weight:700; z-index:5; }
-    .item-node { position:absolute; transform:translate(-50%,-50%); cursor:pointer; text-align:center; z-index:4; }
+    .item-node { position:absolute; transform:translate(-50%,-50%); cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none; }
+    .item-node.dragging { cursor:grabbing; z-index:20; }
     .icon { width:74px; height:74px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border:1px solid #333; border-radius:22px; font-size:34px; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
     .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.9); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
@@ -46,12 +44,14 @@
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px; }
+    .metrics { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:12px; }
+    .metric { background:#101018; border:1px solid #222235; border-radius:12px; padding:12px; }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useMemo, useState } = React;
+const { useMemo, useState, useRef } = React;
 
 const ITEM_CATEGORIES = {
   "Elektronik Eşyalar": [
@@ -102,18 +102,52 @@ const ITEM_CATEGORIES = {
 
 const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", tv:"📺", sofa:"🛋️", lamp:"💡", fridge:"🧊", laptop:"💻", bed:"🛏️", phone:"📱", table:"🪑", monitor:"🖥️", speaker:"🔊", ac:"❄️", washer:"🧺", coffee:"☕", microwave:"📟", oven:"🔥", bike:"🚲", default:"📦" };
 
-const starter = [{ id:"1", name:"Evim", subs:[{ id:"s1", name:"Salon", items:[{ id:"i1", category:"Elektronik Eşyalar", name:"Televizyon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", status:"Kullanımda", brand:"Samsung", model:"QLED 65", identifier:"SN-10023", owner:"Benim", location:"Salon", warrantyEnd:"2026-05-15", supplier:"Teknosa", currentStage:"Kullanımda", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"", events:[{ id:"e1", date:"12.04.2026", text:"Sisteme eklendi" }], docs:[{ id:"d1", name:"Fatura.pdf", type:"Fatura" }] }, { id:"i2", category:"Mobilyalar", name:"Koltuk Takımı", type:"Mobilya", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", status:"Kullanımda", brand:"İstikbal", model:"L Koltuk", identifier:"", owner:"Aile", location:"Salon", warrantyEnd:"2027-03-10", supplier:"", currentStage:"Kullanımda", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"", events:[{ id:"e2", date:"10.03.2026", text:"Eklendi" }], docs:[] }] }] }];
+const starter = [
+  { id:"1", name:"Evim", subs:[
+    { id:"s1", name:"Salon", items:[
+      { id:"i1", category:"Elektronik Eşyalar", name:"Televizyon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Samsung", model:"QLED 65", x:50, y:18, events:[{ id:"e1", date:"12.04.2026", text:"Sisteme eklendi" }], docs:[{ id:"d1", name:"Fatura.pdf", type:"Fatura" }] },
+      { id:"i2", category:"Mobilyalar", name:"Koltuk Takımı", type:"Mobilya", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"İstikbal", model:"L Koltuk", x:50, y:54, events:[{ id:"e2", date:"10.03.2026", text:"Eklendi" }], docs:[] }
+    ] }
+  ] }
+];
 
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
-function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", status:"Kullanımda", brand:"", model:"", identifier:"", owner:"", location:"", warrantyEnd:"", supplier:"", currentStage:"Satın alındı", serviceStatus:"", replacementApproved:"", replacementName:"", replacementBrand:"", replacementModel:"", replacementDate:"", disposalStatus:"", notes:"" }; }
+function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"" }; }
 
-function detectIcon(name="", type=""){ const t=(name+" "+type).toLowerCase(); if(t.includes("telev")) return icons.tv; if(t.includes("koltuk")||t.includes("kanepe")) return icons.sofa; if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return icons.lamp; if(t.includes("buzdol")) return icons.fridge; if(t.includes("laptop")||t.includes("bilgisayar")) return icons.laptop; if(t.includes("yatak")) return icons.bed; if(t.includes("telefon")) return icons.phone; if(t.includes("araba")) return icons.car; if(t.includes("bisiklet")) return icons.bike; if(t.includes("masa")||t.includes("sandalye")) return icons.table; if(t.includes("monit")) return icons.monitor; if(t.includes("hoparl")) return icons.speaker; if(t.includes("klima")) return icons.ac; if(t.includes("çamaşır")) return icons.washer; if(t.includes("kahve")) return icons.coffee; if(t.includes("mikrodalga")) return icons.microwave; if(t.includes("fırın")) return icons.oven; return icons.default; }
-function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return icons.home; if(t.includes("iş")||t.includes("ofis")) return icons.office; if(t.includes("mağaza")||t.includes("dükkan")||t.includes("salon")) return icons.shop; if(t.includes("araç")||t.includes("garaj")) return icons.car; return icons.default; }
-function positions(items){ const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}]; return items.map((item,i)=>({ item, ...(base[i]||{x:20+(i%3)*25,y:85}) })); }
-function parseTRDate(dateStr){ if(!dateStr) return null; if(dateStr.includes(".")){ const [d,m,y]=dateStr.split("."); return new Date(+y,+m-1,+d);} if(dateStr.includes("-")) return new Date(dateStr); return null; }
-function daysUntil(dateStr){ const date=parseTRDate(dateStr); if(!date||isNaN(date)) return null; const today=new Date(); today.setHours(0,0,0,0); date.setHours(0,0,0,0); return Math.round((date-today)/(1000*60*60*24)); }
-
+function detectIcon(name="", type=""){
+  const t=(name+" "+type).toLowerCase();
+  if(t.includes("telev")) return icons.tv;
+  if(t.includes("koltuk")||t.includes("kanepe")) return icons.sofa;
+  if(t.includes("abajur")||t.includes("lamba")||t.includes("avize")) return icons.lamp;
+  if(t.includes("buzdol")) return icons.fridge;
+  if(t.includes("laptop")||t.includes("bilgisayar")) return icons.laptop;
+  if(t.includes("yatak")) return icons.bed;
+  if(t.includes("telefon")) return icons.phone;
+  if(t.includes("araba")) return icons.car;
+  if(t.includes("bisiklet")) return icons.bike;
+  if(t.includes("masa")||t.includes("sandalye")) return icons.table;
+  if(t.includes("monit")) return icons.monitor;
+  if(t.includes("hoparl")) return icons.speaker;
+  if(t.includes("klima")) return icons.ac;
+  if(t.includes("çamaşır")) return icons.washer;
+  if(t.includes("kahve")) return icons.coffee;
+  if(t.includes("mikrodalga")) return icons.microwave;
+  if(t.includes("fırın")) return icons.oven;
+  return icons.default;
+}
+function detectSceneIcon(name=""){
+  const t=name.toLowerCase();
+  if(t.includes("ev")) return icons.home;
+  if(t.includes("iş")||t.includes("ofis")) return icons.office;
+  if(t.includes("mağaza")||t.includes("dükkan")||t.includes("salon")) return icons.shop;
+  if(t.includes("araç")||t.includes("garaj")) return icons.car;
+  return icons.default;
+}
+function defaultPos(index){
+  const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}];
+  return base[index] || {x:20+(index%3)*25,y:85};
+}
 function Modal({ title, onClose, children }){ return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={(e)=>e.stopPropagation()}><div className="row" style={{marginBottom:16}}><h3>{title}</h3><button className="btn btn-dark" onClick={onClose}>Kapat</button></div>{children}</div></div>; }
 function TopBar({ title, sub, onBack, right }){ return <div className="topbar">{onBack&&<button className="btn btn-dark" onClick={onBack}>←</button>}<div style={{flex:1}}><div style={{fontSize:17,fontWeight:700}}>{title}</div>{sub&&<div className="muted" style={{marginTop:2}}>{sub}</div>}</div>{right}</div>; }
 
@@ -144,6 +178,7 @@ function ItemForm({ form, setForm }){
       <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
     </div>
   </>;
 }
@@ -158,6 +193,9 @@ function App(){
   const [sceneName,setSceneName]=useState("");
   const [roomName,setRoomName]=useState("");
   const [itemForm,setItemForm]=useState(emptyItemForm());
+  const [editForm,setEditForm]=useState(emptyItemForm());
+  const [draggingId,setDraggingId]=useState(null);
+  const sceneRef=useRef(null);
 
   const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
   const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
@@ -170,23 +208,124 @@ function App(){
   function goItem(id){ setActiveItemId(id); setView("item"); }
   function addScene(){ if(!sceneName.trim()) return; const next={id:mkid(),name:sceneName.trim(),subs:[]}; setScenes(prev=>[...prev,next]); setSceneName(""); setModal(null); }
   function addRoom(){ if(!roomName.trim()||!activeSceneId) return; const next={id:mkid(),name:roomName.trim(),items:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:[...s.subs,next]}:s)); setRoomName(""); setModal(null); }
-  function addItem(){ if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return; const next={id:mkid(), ...itemForm, events:[], docs:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:[...r.items,next]}:r)}:s)); setItemForm(emptyItemForm()); setModal(null); }
+  function addItem(){
+    if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return;
+    const pos = activeRoom ? defaultPos(activeRoom.items.length) : {x:50,y:50};
+    const next={id:mkid(), ...itemForm, x:pos.x, y:pos.y, events:[{id:mkid(),date:tdy(),text:"Sisteme eklendi"}], docs:[]};
+    setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:[...r.items,next]}:r)}:s));
+    setItemForm(emptyItemForm());
+    setModal(null);
+  }
+  function updateItem(itemId, updater){
+    setScenes(prev=>prev.map(s=>s.id===activeSceneId?{
+      ...s,
+      subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:r.items.map(i=>i.id===itemId?updater(i):i)}:r)
+    }:s));
+  }
+  function saveEdit(){
+    if(!activeItem || !editForm.name.trim()) return;
+    updateItem(activeItem.id, i => ({ ...i, ...editForm }));
+    setModal(null);
+  }
+
+  function startDrag(itemId, e){
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingId(itemId);
+  }
+  function moveDrag(e){
+    if(!draggingId || !sceneRef.current) return;
+    const rect = sceneRef.current.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    let x = ((point.clientX - rect.left) / rect.width) * 100;
+    let y = ((point.clientY - rect.top) / rect.height) * 100;
+    x = Math.max(8, Math.min(92, x));
+    y = Math.max(12, Math.min(88, y));
+    updateItem(draggingId, i => ({ ...i, x, y }));
+  }
+  function endDrag(){
+    setDraggingId(null);
+  }
 
   if(view==="home"){
-    return <div><TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} /><div className="container">{scenes.map(s=><div key={s.id} className="hero-banner" onClick={()=>goScene(s.id)} style={{cursor:"pointer"}}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}</div>{modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}</div>;
+    return <div>
+      <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
+      <div className="container">
+        {scenes.map(s=><div key={s.id} className="hero-banner" onClick={()=>goScene(s.id)} style={{cursor:"pointer"}}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}
+      </div>
+      {modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}
+    </div>;
   }
 
   if(view==="scene"&&activeScene){
-    return <div><TopBar title={activeScene.name} sub="Başlık paneli" onBack={()=>setView("home")} right={<button className="btn btn-primary" onClick={()=>setModal("room")}>+ Alt Başlık</button>} /><div className="container">{activeScene.subs.map(r=><div key={r.id} className="card" onClick={()=>goRoom(r.id)}><div className="row"><div><div style={{fontSize:16,fontWeight:700}}>{r.name}</div><div className="muted">{r.items.length} eşya</div></div><div>›</div></div></div>)}</div>{modal==="room"&&<Modal title="Yeni Alt Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div><input value={roomName} onChange={e=>setRoomName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button></Modal>}</div>;
+    return <div>
+      <TopBar title={activeScene.name} sub="Başlık paneli" onBack={()=>setView("home")} right={<button className="btn btn-primary" onClick={()=>setModal("room")}>+ Alt Başlık</button>} />
+      <div className="container">
+        {activeScene.subs.map(r=><div key={r.id} className="card" onClick={()=>goRoom(r.id)}><div className="row"><div><div style={{fontSize:16,fontWeight:700}}>{r.name}</div><div className="muted">{r.items.length} eşya</div></div><div>›</div></div></div>)}
+      </div>
+      {modal==="room"&&<Modal title="Yeni Alt Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div><input value={roomName} onChange={e=>setRoomName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button></Modal>}
+    </div>;
   }
 
   if(view==="room"&&activeRoom){
-    const placed=positions(activeRoom.items);
-    return <div><TopBar title={activeRoom.name} sub="Tam sayfa görünüm" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} /><div className="scene-page"><div className="scene-grid"></div><div className="scene-frame"></div><div className="room-label">{activeRoom.name}</div>{placed.map(({item,x,y})=><div key={item.id} className="item-node" style={{left:`${x}%`,top:`${y}%`}} onClick={()=>goItem(item.id)}><div className="icon">{detectIcon(item.name,item.type)}</div><div className="item-name">{item.name}</div></div>)}</div>{modal==="item"&&<Modal title="Yeni Eşya" onClose={()=>setModal(null)}><ItemForm form={itemForm} setForm={setItemForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={addItem}>Kaydet</button></Modal>}</div>;
+    return <div>
+      <TopBar title={activeRoom.name} sub="Tam sayfa görünüm · ikonları sürükleyebilirsin" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
+      <div
+        className="scene-page"
+        ref={sceneRef}
+        onMouseMove={moveDrag}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchMove={moveDrag}
+        onTouchEnd={endDrag}
+      >
+        <div className="scene-grid"></div>
+        <div className="scene-frame"></div>
+        <div className="room-label">{activeRoom.name}</div>
+        {activeRoom.items.map((item, index)=>{
+          const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
+          return <div
+            key={item.id}
+            className={`item-node ${draggingId===item.id ? "dragging" : ""}`}
+            style={{left:`${pos.x}%`, top:`${pos.y}%`}}
+            onMouseDown={(e)=>startDrag(item.id, e)}
+            onTouchStart={(e)=>startDrag(item.id, e)}
+            onDoubleClick={()=>goItem(item.id)}
+          >
+            <div className="icon">{detectIcon(item.name,item.type)}</div>
+            <div className="item-name">{item.name}</div>
+          </div>;
+        })}
+        {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
+      </div>
+      {modal==="item"&&<Modal title="Yeni Eşya" onClose={()=>setModal(null)}><ItemForm form={itemForm} setForm={setItemForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={addItem}>Kaydet</button></Modal>}
+    </div>;
   }
 
   if(view==="item"&&activeItem){
-    return <div><TopBar title={activeItem.name} sub="Eşyanın hayatı" onBack={()=>setView("room")} /><div className="container"><div className="card"><div style={{fontSize:40}}>{detectIcon(activeItem.name,activeItem.type)}</div><div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div><div className="muted">{activeItem.category}</div></div></div></div>;
+    return <div>
+      <TopBar
+        title={activeItem.name}
+        sub="Eşyanın hayatı"
+        onBack={()=>setView("room")}
+        right={<button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name}); setModal("edit"); }}>Düzenle</button>}
+      />
+      <div className="container">
+        <div className="card" style={{cursor:"default"}}>
+          <div style={{fontSize:40}}>{detectIcon(activeItem.name,activeItem.type)}</div>
+          <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>
+          <div className="muted">{activeItem.category}</div>
+        </div>
+        <div className="grid2">
+          <div className="mini"><div className="muted">Marka</div><div>{activeItem.brand || "-"}</div></div>
+          <div className="mini"><div className="muted">Model</div><div>{activeItem.model || "-"}</div></div>
+          <div className="mini"><div className="muted">Satın Alma Şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
+          <div className="mini"><div className="muted">Satın Alma Tarihi</div><div>{activeItem.acquisitionDate || "-"}</div></div>
+          <div className="mini"><div className="muted">Satın Alma Değeri</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>
+        </div>
+      </div>
+      {modal==="edit"&&<Modal title="Eşyayı Düzenle" onClose={()=>setModal(null)}><ItemForm form={editForm} setForm={setEditForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={saveEdit}>Güncelle</button></Modal>}
+    </div>;
   }
 
   return <div className="container">Boş ekran</div>;

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eşyanın Hayatı</title>
+  <title>Eşyamın Hayatı</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #0a0a0c; color: #fff; }
-    .topbar { padding: 14px 16px; border-bottom: 1px solid #1a1a1e; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:#0a0a0c; }
+    .topbar { padding: 14px 16px; border-bottom: 1px solid #1a1a1e; display:flex; align-items:center; gap:10px; position:sticky; top:0; background:#0a0a0c; z-index:10; }
     .container { padding: 16px; }
     .card { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:10px; cursor:pointer; }
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -19,11 +19,17 @@
     .btn-dark { background:#141416; color:#fff; border:1px solid #2a2a2a; }
     .btn-danger { background:#dc2626; color:#fff; }
     .muted { color:#888; font-size:12px; }
-    .scene { position:relative; height:55vh; min-height:360px; background:#161616; border-top:1px solid #1a1a1e; }
-    .room-label { position:absolute; top:10px; left:12px; background:rgba(0,0,0,.55); padding:5px 12px; border-radius:8px; font-size:13px; font-weight:700; }
-    .item-node { position:absolute; transform:translate(-50%,-50%); cursor:pointer; text-align:center; }
-    .icon { width:64px; height:64px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border:1px solid #333; border-radius:18px; font-size:28px; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
-    .item-name { margin-top:6px; font-size:11px; color:rgba(255,255,255,.8); background:rgba(0,0,0,.7); padding:2px 8px; border-radius:6px; display:inline-block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .scene-page { min-height: calc(100vh - 57px); background:#161616; position:relative; overflow:hidden; }
+    .scene-grid { position:absolute; inset:0; background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .scene-frame { position:absolute; inset:18px; border:2px solid rgba(255,255,255,0.10); border-radius:14px; }
+    .room-label { position:absolute; top:14px; left:14px; background:rgba(0,0,0,.58); padding:7px 14px; border-radius:10px; font-size:14px; font-weight:700; z-index:5; }
+    .item-node { position:absolute; transform:translate(-50%,-50%); cursor:pointer; text-align:center; z-index:4; }
+    .icon { width:74px; height:74px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border:1px solid #333; border-radius:22px; font-size:34px; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
+    .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.9); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .mini { background:#141416; border:1px solid #1e1e22; border-radius:12px; padding:12px 14px; }
@@ -34,6 +40,8 @@
     input, select { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
+    .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px; }
+    .hero-note { background:#101014; border:1px solid #1e1e22; border-radius:16px; padding:14px; margin-bottom:12px; }
   </style>
 </head>
 <body>
@@ -43,9 +51,6 @@
 const { useMemo, useState } = React;
 
 const icons = {
-  home: "🏠",
-  car: "🚗",
-  box: "📦",
   tv: "📺",
   sofa: "🛋️",
   lamp: "💡",
@@ -53,6 +58,8 @@ const icons = {
   laptop: "💻",
   bed: "🛏️",
   phone: "📱",
+  car: "🚗",
+  table: "🪑",
   default: "📦",
 };
 
@@ -98,6 +105,28 @@ const starter = [
             docs: []
           }
         ]
+      },
+      {
+        id: "s2",
+        name: "Mutfak",
+        items: [
+          {
+            id: "i3",
+            name: "Buzdolabı",
+            type: "Beyaz Eşya",
+            acquisitionType: "Satın alındı",
+            acquisitionDate: "2026-01-20",
+            status: "Kullanımda",
+            brand: "Arçelik",
+            model: "No Frost",
+            identifier: "",
+            owner: "",
+            location: "Mutfak",
+            value: "28000",
+            events: [{ id: "e3", date: "20.01.2026", text: "Eklendi" }],
+            docs: []
+          }
+        ]
       }
     ]
   }
@@ -116,19 +145,20 @@ function detectIcon(name = "", type = "") {
   if (t.includes("yatak")) return icons.bed;
   if (t.includes("telefon")) return icons.phone;
   if (t.includes("araba") || t.includes("araç")) return icons.car;
+  if (t.includes("masa")) return icons.table;
   return icons.default;
 }
 
 function positions(items) {
   const base = [
     { x: 50, y: 18 },
-    { x: 50, y: 55 },
+    { x: 50, y: 54 },
     { x: 18, y: 35 },
     { x: 82, y: 35 },
-    { x: 18, y: 70 },
-    { x: 82, y: 70 },
-    { x: 35, y: 82 },
-    { x: 65, y: 82 },
+    { x: 18, y: 72 },
+    { x: 82, y: 72 },
+    { x: 34, y: 82 },
+    { x: 66, y: 82 },
   ];
   return items.map((item, i) => ({ item, ...(base[i] || { x: 20 + (i%3)*25, y: 85 }) }));
 }
@@ -261,11 +291,15 @@ function App() {
     return (
       <div>
         <TopBar
-          title="Eşyanın Hayatı"
+          title="Eşyamın Hayatı"
           sub={`${allItems.length} eşya · ₺${totalValue}`}
           right={<button className="btn btn-primary" onClick={() => setModal("scene")}>+ Başlık</button>}
         />
         <div className="container">
+          <div className="hero-note">
+            <div style={{fontWeight:700, marginBottom:4}}>Başlıklar</div>
+            <div className="muted">Örnek: Evim. Bu başlık altında evinde olan eşyalar yer alır. Altında Salon, Mutfak gibi bölümler eklenir.</div>
+          </div>
           {scenes.map(s => {
             const count = s.subs.reduce((a, r) => a + r.items.length, 0);
             return (
@@ -273,7 +307,7 @@ function App() {
                 <div className="row">
                   <div>
                     <div style={{fontSize:16, fontWeight:700}}>{s.name}</div>
-                    <div className="muted" style={{marginTop:4}}>{s.subs.length} oda · {count} eşya</div>
+                    <div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık · {count} eşya</div>
                   </div>
                   <div style={{fontSize:18}}>›</div>
                 </div>
@@ -301,10 +335,10 @@ function App() {
           title={activeScene.name}
           sub={`${activeScene.subs.reduce((a,r)=>a+r.items.length,0)} eşya`}
           onBack={() => setView("home")}
-          right={<button className="btn btn-primary" onClick={() => setModal("room")}>+ Oda</button>}
+          right={<button className="btn btn-primary" onClick={() => setModal("room")}>+ Alt Başlık</button>}
         />
         <div className="container">
-          {activeScene.subs.length === 0 && <div className="muted">Henüz oda eklenmedi.</div>}
+          {activeScene.subs.length === 0 && <div className="muted">Henüz alt başlık eklenmedi.</div>}
           {activeScene.subs.map(r => (
             <div key={r.id} className="card" onClick={() => goRoom(r.id)}>
               <div className="row">
@@ -318,9 +352,9 @@ function App() {
           ))}
         </div>
         {modal === "room" && (
-          <Modal title="Oda Ekle" onClose={() => setModal(null)}>
+          <Modal title="Yeni Alt Başlık" onClose={() => setModal(null)}>
             <label>
-              <div className="muted" style={{marginBottom:4}}>Oda Adı</div>
+              <div className="muted" style={{marginBottom:4}}>Alt Başlık Adı</div>
               <input value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="Salon, Mutfak..." />
             </label>
             <button className="btn btn-primary" style={{width:"100%"}} onClick={addRoom}>Ekle</button>
@@ -336,11 +370,13 @@ function App() {
       <div>
         <TopBar
           title={activeRoom.name}
-          sub={`${activeScene ? activeScene.name : ""} · ${activeRoom.items.length} eşya`}
+          sub={`${activeScene ? activeScene.name : ""} içinde`}
           onBack={() => setView("scene")}
           right={<button className="btn btn-primary" onClick={() => setModal("quick")}>+ Eşya</button>}
         />
-        <div className="scene">
+        <div className="scene-page">
+          <div className="scene-grid"></div>
+          <div className="scene-frame"></div>
           <div className="room-label">{activeRoom.name}</div>
           {placed.map(({ item, x, y }) => (
             <div key={item.id} className="item-node" style={{ left: `${x}%`, top: `${y}%` }} onClick={() => goItem(item.id)}>
@@ -348,19 +384,15 @@ function App() {
               <div className="item-name">{item.name}</div>
             </div>
           ))}
-          {activeRoom.items.length === 0 && (
-            <div style={{position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center"}} className="muted">
-              Eşya ekleyin
-            </div>
-          )}
+          {activeRoom.items.length === 0 && <div className="empty">Bu tam sayfada henüz eşya yok</div>}
         </div>
         {modal === "quick" && (
-          <Modal title="Hızlı Eşya Ekle" onClose={() => setModal(null)}>
+          <Modal title="Eşya Ekle" onClose={() => setModal(null)}>
             <label>
               <div className="muted" style={{marginBottom:4}}>Eşya Adı</div>
               <input value={quickItemName} onChange={e => setQuickItemName(e.target.value)} placeholder="Televizyon, Koltuk..." />
             </label>
-            <button className="btn btn-primary" style={{width:"100%"}} onClick={addQuickItem}>Odaya Ekle</button>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={addQuickItem}>Ekle</button>
           </Modal>
         )}
       </div>
@@ -372,7 +404,7 @@ function App() {
       <div>
         <TopBar
           title={activeItem.name}
-          sub={activeItem.brand ? `${activeItem.brand} ${activeItem.model || ""}` : (activeItem.type || "Detay")}
+          sub="Eşyanın Hayatı"
           onBack={() => setView("room")}
           right={
             <div style={{display:"flex", gap:8}}>
@@ -383,7 +415,8 @@ function App() {
         />
         <div className="container">
           <div style={{textAlign:"center", marginBottom:20}}>
-            <div style={{fontSize:64}}>{detectIcon(activeItem.name, activeItem.type)}</div>
+            <div style={{fontSize:78}}>{detectIcon(activeItem.name, activeItem.type)}</div>
+            <div style={{fontSize:26, fontWeight:700, marginTop:8}}>{activeItem.name}</div>
             {activeItem.value && <div style={{fontSize:24, fontWeight:700, marginTop:8}}>₺{parseFloat(activeItem.value).toLocaleString("tr-TR")}</div>}
           </div>
 

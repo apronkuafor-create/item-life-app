@@ -30,22 +30,18 @@
     .room-label { position:absolute; top:14px; left:14px; background:rgba(0,0,0,.58); padding:7px 14px; border-radius:10px; font-size:14px; font-weight:700; z-index:5; }
     .item-node { position:absolute; transform:translate(-50%,-50%); cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none; }
     .item-node.dragging { cursor:grabbing; z-index:20; }
-    .icon { width:74px; height:74px; display:flex; align-items:center; justify-content:center; background:#1f1f23; border:1px solid #333; border-radius:22px; font-size:34px; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
-    .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.9); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .icon { width:74px; height:74px; display:flex; align-items:center; justify-content:center; border:1px solid #333; border-radius:22px; font-size:34px; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
+    .item-name { margin-top:6px; font-size:12px; color:rgba(255,255,255,.95); background:rgba(0,0,0,.72); padding:3px 10px; border-radius:7px; display:inline-block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .item-sub { margin-top:4px; font-size:10px; color:rgba(255,255,255,.78); background:rgba(0,0,0,.55); padding:2px 8px; border-radius:6px; display:inline-block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .section { background:#141416; border:1px solid #1e1e22; border-radius:16px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .mini { background:#141416; border:1px solid #1e1e22; border-radius:12px; padding:12px 14px; }
-    .timeline { padding-bottom:12px; position:relative; display:flex; gap:10px; }
-    .dot { width:8px; height:8px; border-radius:99px; margin-top:4px; background:#6366f1; flex-shrink:0; }
     .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; padding:16px; z-index:999; }
     .modal { width:100%; max-width:560px; max-height:88vh; overflow:auto; background:#141416; border-radius:20px; padding:20px; }
     input, select, textarea { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a; background:#0a0a0c; color:#eee; outline:none; }
-    textarea { min-height: 84px; resize: vertical; }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px; }
-    .metrics { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:12px; }
-    .metric { background:#101018; border:1px solid #222235; border-radius:12px; padding:12px; }
   </style>
 </head>
 <body>
@@ -100,20 +96,26 @@ const ITEM_CATEGORIES = {
   ]
 };
 
+const COLOR_OPTIONS = ["Siyah","Beyaz","Gri","Gümüş","Altın","Mavi","Kırmızı","Yeşil","Sarı","Mor","Pembe","Turuncu","Kahverengi","Şeffaf"];
+const COLOR_HEX = {
+  "Siyah":"#232323","Beyaz":"#f2f2f2","Gri":"#7c7c7c","Gümüş":"#b7bcc5","Altın":"#d4af37",
+  "Mavi":"#3b82f6","Kırmızı":"#ef4444","Yeşil":"#22c55e","Sarı":"#eab308","Mor":"#a855f7",
+  "Pembe":"#ec4899","Turuncu":"#f97316","Kahverengi":"#8b5e3c","Şeffaf":"#94a3b8"
+};
 const icons = { home:"🏠", office:"🏢", shop:"🏬", car:"🚗", tv:"📺", sofa:"🛋️", lamp:"💡", fridge:"🧊", laptop:"💻", bed:"🛏️", phone:"📱", table:"🪑", monitor:"🖥️", speaker:"🔊", ac:"❄️", washer:"🧺", coffee:"☕", microwave:"📟", oven:"🔥", bike:"🚲", default:"📦" };
 
 const starter = [
   { id:"1", name:"Evim", subs:[
     { id:"s1", name:"Salon", items:[
-      { id:"i1", category:"Elektronik Eşyalar", name:"Televizyon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Samsung", model:"QLED 65", x:50, y:18, events:[{ id:"e1", date:"12.04.2026", text:"Sisteme eklendi" }], docs:[{ id:"d1", name:"Fatura.pdf", type:"Fatura" }] },
-      { id:"i2", category:"Mobilyalar", name:"Koltuk Takımı", type:"Mobilya", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"İstikbal", model:"L Koltuk", x:50, y:54, events:[{ id:"e2", date:"10.03.2026", text:"Eklendi" }], docs:[] }
+      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Apple", model:"iPhone 15 Pro", color:"Siyah", x:50, y:18, events:[{ id:"e1", date:"12.04.2026", text:"Sisteme eklendi" }], docs:[] },
+      { id:"i2", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"Samsung", model:"S24", color:"Mavi", x:50, y:54, events:[{ id:"e2", date:"10.03.2026", text:"Eklendi" }], docs:[] }
     ] }
   ] }
 ];
 
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
-function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"" }; }
+function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"", color:"" }; }
 
 function detectIcon(name="", type=""){
   const t=(name+" "+type).toLowerCase();
@@ -148,6 +150,18 @@ function defaultPos(index){
   const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}];
   return base[index] || {x:20+(index%3)*25,y:85};
 }
+function itemSubtitle(item){
+  const parts = [item.model, item.color].filter(Boolean);
+  return parts.join(" · ");
+}
+function iconBg(color){
+  const c = COLOR_HEX[color] || "#1f1f23";
+  return `linear-gradient(135deg, ${c}33, ${c}77)`;
+}
+function iconBorder(color){
+  return COLOR_HEX[color] || "#333";
+}
+
 function Modal({ title, onClose, children }){ return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={(e)=>e.stopPropagation()}><div className="row" style={{marginBottom:16}}><h3>{title}</h3><button className="btn btn-dark" onClick={onClose}>Kapat</button></div>{children}</div></div>; }
 function TopBar({ title, sub, onBack, right }){ return <div className="topbar">{onBack&&<button className="btn btn-dark" onClick={onBack}>←</button>}<div style={{flex:1}}><div style={{fontSize:17,fontWeight:700}}>{title}</div>{sub&&<div className="muted" style={{marginTop:2}}>{sub}</div>}</div>{right}</div>; }
 
@@ -176,6 +190,7 @@ function ItemForm({ form, setForm }){
       <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} readOnly /></label>
       <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Renk</div><select value={form.color} onChange={e=>setField("color",e.target.value)}><option value="">Seçiniz</option>{COLOR_OPTIONS.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
       <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
@@ -228,11 +243,7 @@ function App(){
     setModal(null);
   }
 
-  function startDrag(itemId, e){
-    e.preventDefault();
-    e.stopPropagation();
-    setDraggingId(itemId);
-  }
+  function startDrag(itemId, e){ e.preventDefault(); e.stopPropagation(); setDraggingId(itemId); }
   function moveDrag(e){
     if(!draggingId || !sceneRef.current) return;
     const rect = sceneRef.current.getBoundingClientRect();
@@ -243,9 +254,7 @@ function App(){
     y = Math.max(12, Math.min(88, y));
     updateItem(draggingId, i => ({ ...i, x, y }));
   }
-  function endDrag(){
-    setDraggingId(null);
-  }
+  function endDrag(){ setDraggingId(null); }
 
   if(view==="home"){
     return <div>
@@ -269,7 +278,7 @@ function App(){
 
   if(view==="room"&&activeRoom){
     return <div>
-      <TopBar title={activeRoom.name} sub="Tam sayfa görünüm · ikonları sürükleyebilirsin" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
+      <TopBar title={activeRoom.name} sub="Tam sayfa görünüm · sürükle / çift tıkla detay" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
       <div
         className="scene-page"
         ref={sceneRef}
@@ -292,8 +301,11 @@ function App(){
             onTouchStart={(e)=>startDrag(item.id, e)}
             onDoubleClick={()=>goItem(item.id)}
           >
-            <div className="icon">{detectIcon(item.name,item.type)}</div>
+            <div className="icon" style={{ background: iconBg(item.color), borderColor: iconBorder(item.color) }}>
+              {detectIcon(item.name,item.type)}
+            </div>
             <div className="item-name">{item.name}</div>
+            {itemSubtitle(item) && <div className="item-sub">{itemSubtitle(item)}</div>}
           </div>;
         })}
         {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
@@ -312,13 +324,16 @@ function App(){
       />
       <div className="container">
         <div className="card" style={{cursor:"default"}}>
-          <div style={{fontSize:40}}>{detectIcon(activeItem.name,activeItem.type)}</div>
+          <div className="icon" style={{ background: iconBg(activeItem.color), borderColor: iconBorder(activeItem.color), marginBottom:12 }}>
+            {detectIcon(activeItem.name,activeItem.type)}
+          </div>
           <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>
           <div className="muted">{activeItem.category}</div>
         </div>
         <div className="grid2">
           <div className="mini"><div className="muted">Marka</div><div>{activeItem.brand || "-"}</div></div>
           <div className="mini"><div className="muted">Model</div><div>{activeItem.model || "-"}</div></div>
+          <div className="mini"><div className="muted">Renk</div><div>{activeItem.color || "-"}</div></div>
           <div className="mini"><div className="muted">Satın Alma Şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
           <div className="mini"><div className="muted">Satın Alma Tarihi</div><div>{activeItem.acquisitionDate || "-"}</div></div>
           <div className="mini"><div className="muted">Satın Alma Değeri</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>

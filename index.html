@@ -43,6 +43,8 @@
     }
     .section-strip {
       padding: 2px 2px 14px 2px;
+      cursor: pointer;
+      user-select: none;
     }
     .section-strip-title {
       font-size: 20px;
@@ -76,44 +78,27 @@
       padding:12px;
       margin-top:12px;
     }
-    .color-spectrum {
-      width:100%;
-      height:42px;
-      border-radius:999px;
-      position:relative;
-      cursor:crosshair;
+    .nature-grid {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:8px;
+      margin-top:12px;
+    }
+    .nature-chip {
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:var(--card);
+      cursor:pointer;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      min-height:58px;
+    }
+    .nature-chip.active { outline:2px solid var(--accent); }
+    .nature-swatch {
+      width:26px; height:26px; border-radius:999px; flex-shrink:0;
       border:1px solid rgba(255,255,255,.18);
-      background:
-        linear-gradient(90deg,
-          hsl(0 95% 58%),
-          hsl(15 95% 58%),
-          hsl(30 95% 58%),
-          hsl(45 95% 58%),
-          hsl(60 95% 58%),
-          hsl(90 90% 50%),
-          hsl(120 78% 46%),
-          hsl(150 75% 44%),
-          hsl(180 82% 44%),
-          hsl(210 85% 56%),
-          hsl(240 85% 62%),
-          hsl(270 82% 62%),
-          hsl(300 80% 60%),
-          hsl(330 82% 60%),
-          hsl(360 95% 58%)
-        );
-      overflow:hidden;
-    }
-    .color-spectrum::after{
-      content:"";
-      position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 45%, rgba(0,0,0,.12));
-      pointer-events:none;
-    }
-    .color-thumb{
-      position:absolute; top:50%; transform:translate(-50%,-50%);
-      width:22px; height:22px; border-radius:999px;
-      border:3px solid #fff; box-shadow:0 0 0 2px rgba(0,0,0,.25);
-      pointer-events:none;
     }
     .card { border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor:pointer; }
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -121,6 +106,10 @@
     .btn { border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:700; }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color:#fff;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color:#fff;
     }
     .btn-dark { background: var(--card2); color: var(--text); border:1px solid var(--line); }
@@ -141,18 +130,6 @@
       overflow: hidden;
       transform-origin: top center;
       will-change: transform;
-    }
-    .scene-grid {
-      position:absolute; inset:0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-    }
-    .scene-frame {
-      position:absolute; inset:18px;
-      border:2px solid color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,.06));
-      border-radius:18px;
     }
     .room-label {
       position:absolute; top:14px; left:14px;
@@ -176,7 +153,7 @@
     .item-node {
       position:absolute; transform:translate(-50%,-50%);
       cursor:default; text-align:center; z-index:4; touch-action:none; user-select:none;
-      width: 168px;
+      width: 150px;
       transition: transform .12s ease;
     }
     .item-node.pressing {
@@ -186,22 +163,21 @@
       z-index:20;
       transform: translate(-50%,-50%) scale(1.07);
     }
-    .item-type {
-      margin-bottom:6px; font-size:11px; color:var(--accent); font-weight:700;
-      display:block;
-    }
     .item-name {
-      margin-top:8px; font-size:14px; color:var(--text);
-      background: color-mix(in srgb, var(--card) 80%, transparent);
+      margin-top:6px; font-size:13px; color:var(--text);
+      background: color-mix(in srgb, var(--card) 86%, transparent);
       padding:4px 10px; border-radius:999px;
-      display:inline-block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      display:inline-block; max-width:132px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       border: 1px solid var(--line); font-weight:700;
     }
-    .item-model {
-      margin-top:4px; font-size:12px; color:var(--muted);
-      display:block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    .item-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin: 6px auto 0 auto;
+      background: var(--accent);
+      opacity: .9;
     }
-    .item-color { margin-top:3px; font-size:11px; color:var(--accent); font-weight:700; }
     .section { border-radius:18px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .mini { border-radius:14px; padding:12px 14px; }
@@ -236,7 +212,7 @@
       padding:12px;
       margin-top:8px;
     }
-    @media (max-width: 760px) { .grid2, .theme-grid { grid-template-columns:1fr; } }
+    @media (max-width: 760px) { .grid2, .theme-grid, .nature-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -266,6 +242,27 @@ const THEME_GROUPS = {
     neon_grape: { label: "Neon Grape", bg:"#100b14", text:"#faf2ff", muted:"#bfa5ca", card:"#1b1221", card2:"#26172c", line:"#3a2744", accent:"#a855f7", accent2:"#ec4899", accentSoft:"#2d1835", glow1:"rgba(168,85,247,.14)", glow2:"rgba(236,72,153,.08)" }
   }
 };
+
+const NATURE_PALETTE = [
+  { name:"Kar", hue:0, sat:0, light:98 },
+  { name:"Kömür", hue:0, sat:0, light:12 },
+  { name:"Toprak", hue:24, sat:42, light:33 },
+  { name:"Kum", hue:38, sat:52, light:71 },
+  { name:"Bal", hue:44, sat:82, light:54 },
+  { name:"Hardal", hue:50, sat:84, light:46 },
+  { name:"Zeytin", hue:82, sat:58, light:36 },
+  { name:"Yaprak", hue:118, sat:56, light:40 },
+  { name:"Çim", hue:132, sat:64, light:43 },
+  { name:"Orman", hue:146, sat:44, light:28 },
+  { name:"Turkuaz", hue:176, sat:72, light:42 },
+  { name:"Deniz", hue:198, sat:78, light:46 },
+  { name:"Gök", hue:212, sat:82, light:58 },
+  { name:"Lacivert", hue:228, sat:62, light:28 },
+  { name:"Mürdüm", hue:274, sat:58, light:42 },
+  { name:"Lavanta", hue:286, sat:58, light:62 },
+  { name:"Gül", hue:334, sat:76, light:58 },
+  { name:"Kiraz", hue:356, sat:78, light:52 }
+];
 
 const ACQUISITION_OPTIONS = {
   "Satın alındı": { dateLabel: "Satın alma tarihi", valueLabel: "Satın alma değeri" },
@@ -342,7 +339,7 @@ const starter = [
 
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
-function hslTheme(h){
+function hslTheme(h, sat=82, light=58){
   return {
     label: "Özel",
     bg: `hsl(${h} 28% 9%)`,
@@ -351,11 +348,11 @@ function hslTheme(h){
     card: `hsl(${h} 24% 14%)`,
     card2: `hsl(${h} 24% 18%)`,
     line: `hsl(${h} 20% 28%)`,
-    accent: `hsl(${h} 82% 58%)`,
-    accent2: `hsl(${(h+35)%360} 78% 60%)`,
+    accent: `hsl(${h} ${sat}% ${light}%)`,
+    accent2: `hsl(${(h+28)%360} ${Math.max(40,sat-8)}% ${Math.min(68,light+4)}%)`,
     accentSoft: `hsl(${h} 42% 20%)`,
-    glow1: `hsla(${h} 82% 58% / .14)`,
-    glow2: `hsla(${(h+35)%360} 78% 60% / .08)`
+    glow1: `hsla(${h} ${sat}% ${light}% / .14)`,
+    glow2: `hsla(${(h+28)%360} ${Math.max(40,sat-8)}% ${Math.min(68,light+4)}% / .08)`
   };
 }
 function emptyServiceForm(){ return { date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" }; }
@@ -630,7 +627,8 @@ function ServiceForm({ serviceForm, setServiceForm, onAdd }) {
 function App(){
   const [themeKey, setThemeKey] = useState("royal_navy");
   const [themeLibraryOpen, setThemeLibraryOpen] = useState(false);
-  const [customHue, setCustomHue] = useState(220);
+  const [customTheme, setCustomTheme] = useState({ hue:220, sat:82, light:58 });
+  const [selectedNature, setSelectedNature] = useState(null);
   const [scenes,setScenes]=useState(starter);
   const [view,setView]=useState("home");
   const [activeSceneId,setActiveSceneId]=useState("");
@@ -645,8 +643,8 @@ function App(){
   const [draggingId,setDraggingId]=useState(null);
   const [pressingId,setPressingId]=useState(null);
   const [sceneScale, setSceneScale] = useState(1);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const sceneRef=useRef(null);
-  const sceneShellRef=useRef(null);
   const colorBarRef=useRef(null);
   const pressTimerRef = useRef(null);
   const pressStartRef = useRef({ x: 0, y: 0 });
@@ -661,9 +659,9 @@ function App(){
       }
     }
     if (!applied && themeKey === "custom") {
-      applyTheme(hslTheme(customHue));
+      applyTheme(hslTheme(customTheme.hue, customTheme.sat, customTheme.light));
     }
-  }, [themeKey, customHue]);
+  }, [themeKey, customTheme]);
 
   const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
   const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
@@ -689,6 +687,15 @@ function App(){
       ...s,
       subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:r.items.map(i=>i.id===itemId?updater(i):i)}:r)
     }:s));
+  }
+  function deleteActiveItem(){
+    if(!activeItem) return;
+    setScenes(prev=>prev.map(s=>s.id===activeSceneId?{
+      ...s,
+      subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:r.items.filter(i=>i.id!==activeItem.id)}:r)
+    }:s));
+    setDeleteConfirm(null);
+    setView("room");
   }
   function saveEdit(){
     if(!activeItem || !editForm.name.trim()) return;
@@ -768,12 +775,15 @@ function App(){
   function updateHueFromClientX(clientX){
     const rect = colorBarRef.current.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    setCustomHue(Math.round(ratio * 360));
+    setSelectedNature(null);
+    setCustomTheme(prev => ({ ...prev, hue: Math.round(ratio * 360) }));
     setThemeKey("custom");
   }
-  function handleColorPointer(e){ updateHueFromClientX(e.clientX); }
-  function handleColorMove(e){ if (e.buttons === 1) updateHueFromClientX(e.clientX); }
-  function handleColorTouch(e){ if (e.touches[0]) updateHueFromClientX(e.touches[0].clientX); }
+  function chooseNature(p){
+    setSelectedNature(p.name);
+    setCustomTheme({ hue:p.hue, sat:p.sat, light:p.light });
+    setThemeKey("custom");
+  }
 
   function distance(t1, t2){
     const dx = t1.clientX - t2.clientX;
@@ -805,57 +815,73 @@ function App(){
     {view==="home" && <>
       <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
       <div className="container">
-        <div className="section-strip">
-          <div className="section-strip-title">Tema Kütüphanesi</div>
-          <div className="section-strip-sub">Tema başlığı üst alana taşındı</div>
+        <div className="section-strip" onClick={()=>setThemeLibraryOpen(v=>!v)}>
+          <div className="section-strip-title">Tema</div>
+          <div className="section-strip-sub">Tema alanını açmak için buraya dokun</div>
         </div>
 
-        <div className="hero" style={{cursor:"default"}}>
-          <div className="theme-library-head" onClick={()=>setThemeLibraryOpen(v=>!v)}>
+        {themeLibraryOpen && <div className="hero" style={{cursor:"default"}}>
+          <div className="theme-library-head">
             <div>
               <div style={{fontSize:16,fontWeight:700}}>Hazır Tema Setleri</div>
               <div className="muted" style={{marginTop:4}}>Ön tanımlı uyumlu temalar</div>
             </div>
-            <button className="btn btn-dark">{themeLibraryOpen ? "Gizle" : "Göster"}</button>
+            <button className="btn btn-dark" onClick={()=>setThemeLibraryOpen(false)}>Kapat</button>
           </div>
-          {themeLibraryOpen && <>
-            {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
-              <div key={groupName}>
-                <div className="theme-section-title">{groupName}</div>
-                <div className="theme-grid">
-                  {Object.entries(group).map(([key, theme]) => (
-                    <div key={key} className={`theme-card ${themeKey===key ? 'active' : ''}`} onClick={()=>setThemeKey(key)}>
-                      <div className="theme-preview" style={{background:`linear-gradient(135deg, ${theme.accent}, ${theme.accent2})`}} />
-                      <div>
-                        <div style={{fontWeight:700}}>{theme.label}</div>
-                        <div className="muted">{groupName}</div>
-                      </div>
+          {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
+            <div key={groupName}>
+              <div className="theme-section-title">{groupName}</div>
+              <div className="theme-grid">
+                {Object.entries(group).map(([key, theme]) => (
+                  <div key={key} className={`theme-card ${themeKey===key ? 'active' : ''}`} onClick={()=>setThemeKey(key)}>
+                    <div className="theme-preview" style={{background:`linear-gradient(135deg, ${theme.accent}, ${theme.accent2})`}} />
+                    <div>
+                      <div style={{fontWeight:700}}>{theme.label}</div>
+                      <div className="muted">{groupName}</div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <div className="color-lab">
-              <div style={{fontWeight:700}}>Sonsuz Renk Skalası</div>
-              <div className="muted" style={{marginTop:4}}>Tüm renkler 360° spektrum olarak açıldı. Üzerinde gezdikçe tema anında değişir.</div>
-              <div
-                ref={colorBarRef}
-                className="color-spectrum"
-                onPointerDown={handleColorPointer}
-                onPointerMove={handleColorMove}
-                onTouchStart={handleColorTouch}
-                onTouchMove={handleColorTouch}
-              >
-                <div className="color-thumb" style={{ left: `${(customHue/360)*100}%`, background: `hsl(${customHue} 82% 58%)` }} />
+                  </div>
+                ))}
               </div>
             </div>
-          </>}
-        </div>
+          ))}
+          <div className="color-lab">
+            <div style={{fontWeight:700}}>Doğadaki Renkler ve Alt Tonları</div>
+            <div className="muted" style={{marginTop:4}}>Beyaz, siyah, kahve, sarı, yeşil, kırmızı, mavi ve alt tonları eklendi.</div>
+            <div ref={colorBarRef} style={{
+              width:"100%", height:"42px", borderRadius:"999px", position:"relative", cursor:"crosshair",
+              border:"1px solid rgba(255,255,255,.18)",
+              background:"linear-gradient(90deg,hsl(0 95% 58%),hsl(15 95% 58%),hsl(30 95% 58%),hsl(45 95% 58%),hsl(60 95% 58%),hsl(90 90% 50%),hsl(120 78% 46%),hsl(150 75% 44%),hsl(180 82% 44%),hsl(210 85% 56%),hsl(240 85% 62%),hsl(270 82% 62%),hsl(300 80% 60%),hsl(330 82% 60%),hsl(360 95% 58%))"
+            }}
+              onPointerDown={(e)=>updateHueFromClientX(e.clientX)}
+              onPointerMove={(e)=>{ if(e.buttons===1) updateHueFromClientX(e.clientX); }}
+              onTouchStart={(e)=>{ if(e.touches[0]) updateHueFromClientX(e.touches[0].clientX); }}
+              onTouchMove={(e)=>{ if(e.touches[0]) updateHueFromClientX(e.touches[0].clientX); }}
+            >
+              <div style={{
+                position:"absolute", top:"50%", left:`${(customTheme.hue/360)*100}%`, transform:"translate(-50%,-50%)",
+                width:"22px", height:"22px", borderRadius:"999px", border:"3px solid #fff",
+                boxShadow:"0 0 0 2px rgba(0,0,0,.25)", background:`hsl(${customTheme.hue} ${customTheme.sat}% ${customTheme.light}%)`
+              }} />
+            </div>
+
+            <div className="nature-grid">
+              {NATURE_PALETTE.map(p => (
+                <div key={p.name} className={`nature-chip ${selectedNature===p.name ? 'active' : ''}`} onClick={()=>chooseNature(p)}>
+                  <div className="nature-swatch" style={{ background:`hsl(${p.hue} ${p.sat}% ${p.light}%)` }} />
+                  <div>
+                    <div style={{fontWeight:700}}>{p.name}</div>
+                    <div className="muted">{p.hue}° ton</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>}
 
         <div className="hero" style={{cursor:"default"}}>
           <div style={{fontSize:18,fontWeight:700}}>İkon Kapsamı</div>
           <div className="muted" style={{marginTop:4}}>Elektronik, mobilya, beyaz eşya, mutfak, aydınlatma, kişisel ve araç kategorileri için genişletilmiş çizim seti eklendi.</div>
-          <div className="hint">Listeye eklenmeyen özel ürünler şimdilik genel kutu ikonuyla görünür.</div>
+          <div className="hint">Tür ve model yazıları kaldırıldı. Eşya adı küçük etiket olarak kaldı.</div>
         </div>
 
         {scenes.map(s=><div key={s.id} className="hero" onClick={()=>goScene(s.id)}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}
@@ -885,7 +911,7 @@ function App(){
         <input type="range" min="0.7" max="2.4" step="0.01" value={sceneScale} onChange={e=>setSceneScale(Number(e.target.value))} />
       </div>
 
-      <div ref={sceneShellRef} className={`scene-shell ${draggingId ? "lock-scroll" : ""}`}>
+      <div className={`scene-shell ${draggingId ? "lock-scroll" : ""}`}>
         <div
           className="scene"
           ref={sceneRef}
@@ -897,8 +923,6 @@ function App(){
           onTouchMove={onSceneTouchMove}
           onTouchEnd={onSceneTouchEnd}
         >
-          <div className="scene-grid"></div>
-          <div className="scene-frame"></div>
           <div className="room-label">{activeRoom.name}</div>
           {activeRoom.items.map((item, index)=>{
             const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
@@ -912,11 +936,9 @@ function App(){
               onTouchStart={(e)=>startPressTouch(item.id, e)}
               onClick={()=>handleItemClick(item.id)}
             >
-              <span className="item-type">{item.type || "-"}</span>
               <ProductIcon item={item} />
-              {(item.modelName || item.model) && <div className="item-model">{item.modelName || item.model}</div>}
-              <div className="item-name">{item.name}</div>
-              {item.color && <div className="item-color">{item.color}</div>}
+              <div className="item-name">{item.name || "Eşya"}</div>
+              <div className="item-dot"></div>
             </div>;
           })}
           {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
@@ -930,7 +952,12 @@ function App(){
         title={activeItem.name}
         sub="Eşyanın detayları"
         onBack={()=>setView("room")}
-        right={<button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name, invoiceFiles:[]}); setModal("edit"); }}>Düzenle modu</button>}
+        right={
+          <div style={{display:"flex", gap:8}}>
+            <button className="btn btn-danger" onClick={()=>setDeleteConfirm(activeItem.id)}>Sil</button>
+            <button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name, invoiceFiles:[]}); setModal("edit"); }}>Düzenle modu</button>
+          </div>
+        }
       />
       <div className="container">
         <div className="card" style={{cursor:"default"}}>
@@ -967,6 +994,7 @@ function App(){
         </div>
       </div>
       {modal==="edit"&&<Modal title="Eşyayı Düzenle" onClose={()=>setModal(null)}><ItemForm form={editForm} setForm={setEditForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={saveEdit}>Güncelle</button></Modal>}
+      {deleteConfirm && <Modal title="Eşyayı Sil" onClose={()=>setDeleteConfirm(null)}><div className="muted" style={{marginBottom:16}}>Bu eşyayı silmek istediğine emin misin?</div><div style={{display:"flex", gap:8}}><button className="btn btn-dark" onClick={()=>setDeleteConfirm(null)} style={{flex:1}}>Vazgeç</button><button className="btn btn-danger" onClick={deleteActiveItem} style={{flex:1}}>Sil</button></div></Modal>}
     </>}
   </div>;
 }

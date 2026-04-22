@@ -2,13 +2,14 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Eşyamın Hayatı</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { overscroll-behavior: none; touch-action: pan-x pan-y; }
     body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
     .app {
       min-height: 100vh;
@@ -19,14 +20,14 @@
       transition: background .25s ease, color .25s ease;
     }
     .topbar {
-      padding: 14px 16px;
+      padding: 16px 18px;
       border-bottom: 1px solid var(--line);
       display:flex; align-items:center; gap:10px;
       position:sticky; top:0; z-index:20;
       background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(14px);
     }
-    .container { padding: 16px; }
+    .container { padding: 18px; }
     .hero, .card, .mini, .modal, .section {
       background: var(--card);
       border: 1px solid var(--line);
@@ -40,6 +41,10 @@
       font-size:38px; background: linear-gradient(135deg, var(--accentSoft), var(--card2));
       border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
     }
+    .theme-library-head {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      cursor:pointer;
+    }
     .theme-section-title { font-size: 14px; font-weight: 700; margin: 14px 0 8px; color: var(--muted); }
     .theme-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
     .theme-card {
@@ -50,9 +55,9 @@
     .theme-preview {
       width:54px; height:54px; border-radius:14px; flex-shrink:0; border:1px solid rgba(255,255,255,.14);
     }
-    .card { border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor:pointer; }
+    .card { border-radius: 18px; padding: 18px; margin-bottom: 12px; cursor:pointer; }
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .muted { color: var(--muted); font-size:12px; }
+    .muted { color: var(--muted); font-size:13px; }
     .btn { border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:700; }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -80,27 +85,27 @@
       position:absolute; top:14px; left:14px;
       background: color-mix(in srgb, var(--card) 85%, transparent);
       border:1px solid var(--line);
-      padding:8px 14px; border-radius:12px; font-size:14px; font-weight:700; z-index:5;
+      padding:8px 14px; border-radius:12px; font-size:15px; font-weight:700; z-index:5;
       backdrop-filter: blur(10px);
     }
     .item-node {
       position:absolute; transform:translate(-50%,-50%);
       cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none;
-      width: 138px;
+      width: 154px;
     }
     .item-node.dragging { cursor:grabbing; z-index:20; }
     .item-name {
-      margin-top:8px; font-size:12px; color:var(--text);
+      margin-top:8px; font-size:14px; color:var(--text);
       background: color-mix(in srgb, var(--card) 80%, transparent);
       padding:4px 10px; border-radius:999px;
-      display:inline-block; max-width:128px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      display:inline-block; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       border: 1px solid var(--line); font-weight:700;
     }
     .item-model {
-      margin-top:4px; font-size:10px; color:var(--muted);
-      display:block; max-width:128px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      margin-top:4px; font-size:12px; color:var(--muted);
+      display:block; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
-    .item-color { margin-top:3px; font-size:10px; color:var(--accent); font-weight:700; }
+    .item-color { margin-top:3px; font-size:11px; color:var(--accent); font-weight:700; }
     .section { border-radius:18px; padding:16px; margin-bottom:14px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .mini { border-radius:14px; padding:12px 14px; }
@@ -113,10 +118,11 @@
       width:100%; max-width:760px; max-height:88vh; overflow:auto;
       border-radius:24px; padding:20px;
     }
-    input, select {
+    input, select, textarea {
       width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
       background: var(--card2); color: var(--text); outline:none;
     }
+    textarea { min-height: 84px; resize: vertical; }
     label { display:block; margin-bottom:10px; }
     h1,h2,h3,p { margin:0; }
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; }
@@ -124,8 +130,16 @@
       display:inline-block; background:var(--card2); border:1px solid var(--line); border-radius:999px;
       padding:6px 10px; font-size:11px; margin:4px 6px 0 0;
     }
-    .svg-icon { width: 92px; height: 92px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
+    .svg-icon { width: 104px; height: 104px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
     .hint { margin-top: 8px; font-size: 11px; color: var(--muted); }
+    .service-card {
+      display:block;
+      background: var(--card2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      margin-top:8px;
+    }
     @media (max-width: 760px) { .grid2, .theme-grid { grid-template-columns:1fr; } }
   </style>
 </head>
@@ -137,20 +151,34 @@ const { useMemo, useState, useRef, useEffect } = React;
 const THEME_GROUPS = {
   "Sıcak Temalar": {
     warm_sunset: { label: "Sunset", bg:"#140d0a", text:"#fbf4ef", muted:"#c8b3a7", card:"#1e1512", card2:"#291d19", line:"#3a2b25", accent:"#f97316", accent2:"#ef4444", accentSoft:"#3f2316", glow1:"rgba(249,115,22,.14)", glow2:"rgba(239,68,68,.08)" },
-    honey_gold: { label: "Honey Gold", bg:"#120f08", text:"#faf5ea", muted:"#c7b899", card:"#1b1710", card2:"#262016", line:"#3a311f", accent:"#d4af37", accent2:"#f59e0b", accentSoft:"#3d2d10", glow1:"rgba(212,175,55,.12)", glow2:"rgba(245,158,11,.08)" }
+    honey_gold: { label: "Honey Gold", bg:"#120f08", text:"#faf5ea", muted:"#c7b899", card:"#1b1710", card2:"#262016", line:"#3a311f", accent:"#d4af37", accent2:"#f59e0b", accentSoft:"#3d2d10", glow1:"rgba(212,175,55,.12)", glow2:"rgba(245,158,11,.08)" },
+    copper_lounge: { label: "Copper Lounge", bg:"#120b0a", text:"#faefea", muted:"#c8aaa0", card:"#1c1212", card2:"#261919", line:"#3c2727", accent:"#b45309", accent2:"#ea580c", accentSoft:"#391d17", glow1:"rgba(180,83,9,.12)", glow2:"rgba(234,88,12,.08)" }
   },
   "Kurumsal Temalar": {
     royal_navy: { label: "Royal Navy", bg:"#0b0b15", text:"#f0f1fb", muted:"#a8adca", card:"#141727", card2:"#1b2035", line:"#2b3352", accent:"#6366f1", accent2:"#a855f7", accentSoft:"#1c1f40", glow1:"rgba(99,102,241,.14)", glow2:"rgba(168,85,247,.08)" },
-    slate_pro: { label: "Slate Pro", bg:"#0c1015", text:"#eff4f8", muted:"#9db0bf", card:"#141b22", card2:"#1b242e", line:"#2a3643", accent:"#3b82f6", accent2:"#06b6d4", accentSoft:"#1a2635", glow1:"rgba(59,130,246,.12)", glow2:"rgba(6,182,212,.08)" }
+    slate_pro: { label: "Slate Pro", bg:"#0c1015", text:"#eff4f8", muted:"#9db0bf", card:"#141b22", card2:"#1b242e", line:"#2a3643", accent:"#3b82f6", accent2:"#06b6d4", accentSoft:"#1a2635", glow1:"rgba(59,130,246,.12)", glow2:"rgba(6,182,212,.08)" },
+    graphite_plus: { label: "Graphite Plus", bg:"#0d0f12", text:"#f2f5f7", muted:"#aeb6bc", card:"#171a1e", card2:"#20252b", line:"#313840", accent:"#64748b", accent2:"#3b82f6", accentSoft:"#1f2731", glow1:"rgba(100,116,139,.14)", glow2:"rgba(59,130,246,.08)" }
   },
   "Doğal Temalar": {
     forest_mint: { label: "Forest Mint", bg:"#08110c", text:"#edf7f1", muted:"#9db6a7", card:"#101915", card2:"#17231d", line:"#24352d", accent:"#22c55e", accent2:"#14b8a6", accentSoft:"#173625", glow1:"rgba(34,197,94,.12)", glow2:"rgba(20,184,166,.08)" },
-    olive_clay: { label: "Olive Clay", bg:"#0f120c", text:"#f2f4ec", muted:"#b1b7a2", card:"#171a13", card2:"#202518", line:"#313926", accent:"#84cc16", accent2:"#65a30d", accentSoft:"#28311a", glow1:"rgba(132,204,22,.12)", glow2:"rgba(101,163,13,.08)" }
+    olive_clay: { label: "Olive Clay", bg:"#0f120c", text:"#f2f4ec", muted:"#b1b7a2", card:"#171a13", card2:"#202518", line:"#313926", accent:"#84cc16", accent2:"#65a30d", accentSoft:"#28311a", glow1:"rgba(132,204,22,.12)", glow2:"rgba(101,163,13,.08)" },
+    earth_stone: { label: "Earth Stone", bg:"#10100d", text:"#f5f2eb", muted:"#b9b19e", card:"#1a1915", card2:"#24221c", line:"#383428", accent:"#a16207", accent2:"#65a30d", accentSoft:"#322915", glow1:"rgba(161,98,7,.12)", glow2:"rgba(101,163,13,.08)" }
   },
   "Canlı Temalar": {
     rose_pop: { label: "Rose Pop", bg:"#160d13", text:"#fff0f7", muted:"#c7a6b7", card:"#21131c", card2:"#2c1824", line:"#462534", accent:"#ec4899", accent2:"#fb7185", accentSoft:"#3a1c2c", glow1:"rgba(236,72,153,.12)", glow2:"rgba(251,113,133,.08)" },
-    citrus_wave: { label: "Citrus Wave", bg:"#121108", text:"#fffbea", muted:"#cfc595", card:"#1d1b10", card2:"#282517", line:"#3b371f", accent:"#eab308", accent2:"#f97316", accentSoft:"#362c12", glow1:"rgba(234,179,8,.12)", glow2:"rgba(249,115,22,.08)" }
+    citrus_wave: { label: "Citrus Wave", bg:"#121108", text:"#fffbea", muted:"#cfc595", card:"#1d1b10", card2:"#282517", line:"#3b371f", accent:"#eab308", accent2:"#f97316", accentSoft:"#362c12", glow1:"rgba(234,179,8,.12)", glow2:"rgba(249,115,22,.08)" },
+    neon_grape: { label: "Neon Grape", bg:"#100b14", text:"#faf2ff", muted:"#bfa5ca", card:"#1b1221", card2:"#26172c", line:"#3a2744", accent:"#a855f7", accent2:"#ec4899", accentSoft:"#2d1835", glow1:"rgba(168,85,247,.14)", glow2:"rgba(236,72,153,.08)" }
   }
+};
+
+const ACQUISITION_OPTIONS = {
+  "Satın alındı": { dateLabel: "Satın alma tarihi", valueLabel: "Satın alma değeri" },
+  "Hediye geldi": { dateLabel: "Hediye alınma tarihi", valueLabel: "Tahmini değeri" },
+  "Miras kaldı": { dateLabel: "Devralma tarihi", valueLabel: "Tahmini değeri" },
+  "Kiralandı": { dateLabel: "Kiralama başlangıç tarihi", valueLabel: "Kiralama bedeli" },
+  "Takas yapıldı": { dateLabel: "Takas tarihi", valueLabel: "Takas değeri" },
+  "İş yerinden verildi": { dateLabel: "Teslim tarihi", valueLabel: "Kayıtlı değeri" },
+  "İkinci el alındı": { dateLabel: "Satın alma tarihi", valueLabel: "İkinci el alış değeri" }
 };
 
 const ITEM_CATEGORIES = {
@@ -210,15 +238,24 @@ const COLOR_HEX = {
 const starter = [
   { id:"1", name:"Evim", subs:[
     { id:"s1", name:"Salon", items:[
-      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Apple", model:"iPhone 15 Pro", color:"Siyah", x:50, y:18, docs:[{id:"d1",name:"Fatura.pdf",type:"Fatura"}] },
-      { id:"i2", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"Samsung", model:"S24", color:"Mavi", x:50, y:54, docs:[] }
+      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Apple", modelName:"iPhone 15 Pro", modelNumber:"A3104", serialNo:"IP15P-001", color:"Siyah", x:50, y:18, docs:[{id:"d1",name:"Fatura.pdf",type:"Fatura"}], services:[] },
+      { id:"i2", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"Samsung", modelName:"S24", modelNumber:"SM-S921B", serialNo:"S24-002", color:"Mavi", x:50, y:54, docs:[], services:[] }
     ] }
   ] }
 ];
 
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
-function emptyItemForm(){ return { category:"", selectedName:"", customName:"", name:"", type:"", acquisitionType:"Satın alındı", acquisitionDate:tdy(), purchasePrice:"", brand:"", model:"", color:"", invoiceFiles:[] }; }
+function emptyServiceForm(){ return { date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" }; }
+function emptyItemForm(){
+  return {
+    category:"", selectedName:"", customName:"", name:"", type:"",
+    acquisitionType:"Satın alındı",
+    acquisitionDate:tdy(), purchasePrice:"",
+    brand:"", modelName:"", modelNumber:"", serialNo:"",
+    color:"", invoiceFiles:[]
+  };
+}
 function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return "🏠"; if(t.includes("iş")||t.includes("ofis")) return "🏢"; if(t.includes("mağaza")||t.includes("salon")) return "🏬"; return "📦"; }
 function defaultPos(index){ const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}]; return base[index] || {x:20+(index%3)*25,y:85}; }
 
@@ -401,6 +438,7 @@ function TopBar({ title, sub, onBack, right }){ return <div className="topbar">{
 function ItemForm({ form, setForm }){
   const categoryOptions=Object.keys(ITEM_CATEGORIES);
   const itemOptions=form.category?ITEM_CATEGORIES[form.category]:[];
+  const acquisitionMeta = ACQUISITION_OPTIONS[form.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"];
   function setField(key,value){ setForm(prev=>({ ...prev, [key]: value })); }
   function handleCategoryChange(value){ setForm(prev=>({ ...prev, category:value, selectedName:"", customName:"", name:"", type:"" })); }
   function handleItemSelect(value){
@@ -426,11 +464,13 @@ function ItemForm({ form, setForm }){
       <label><div className="muted" style={{marginBottom:4}}>Eşya Adı</div><input value={form.name} readOnly /></label>
       <label><div className="muted" style={{marginBottom:4}}>Tür</div><input value={form.type} readOnly /></label>
       <label><div className="muted" style={{marginBottom:4}}>Marka</div><input value={form.brand} onChange={e=>setField("brand",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Model</div><input value={form.model} onChange={e=>setField("model",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Model adı</div><input value={form.modelName || ""} onChange={e=>setField("modelName",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Model numarası</div><input value={form.modelNumber || ""} onChange={e=>setField("modelNumber",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Seri no</div><input value={form.serialNo || ""} onChange={e=>setField("serialNo",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>Renk</div><select value={form.color} onChange={e=>setField("color",e.target.value)}><option value="">Seçiniz</option>{COLOR_OPTIONS.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Şekli</div><input value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Tarihi</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
-      <label><div className="muted" style={{marginBottom:4}}>Satın Alma Değeri</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Edinme şekli</div><select value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)}>{Object.keys(ACQUISITION_OPTIONS).map(k=><option key={k} value={k}>{k}</option>)}</select></label>
+      <label><div className="muted" style={{marginBottom:4}}>{acquisitionMeta.dateLabel}</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>{acquisitionMeta.valueLabel}</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
     </div>
     <div className="section" style={{marginTop:10}}>
       <div style={{fontWeight:700,marginBottom:8}}>Fatura Ekle</div>
@@ -445,8 +485,39 @@ function ItemForm({ form, setForm }){
   </>;
 }
 
+function ServiceForm({ serviceForm, setServiceForm, onAdd }) {
+  function setField(key, value){ setServiceForm(prev => ({ ...prev, [key]: value })); }
+  return (
+    <div className="section">
+      <div style={{fontWeight:700,marginBottom:8}}>Servis Formu</div>
+      <div className="grid2">
+        <label><div className="muted" style={{marginBottom:4}}>Servis tarihi</div><input value={serviceForm.date} onChange={e=>setField("date", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Durum</div><input value={serviceForm.status} onChange={e=>setField("status", e.target.value)} placeholder="Servise gitti / Tamir edildi / Değişim onayı" /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Arıza / Sebep</div><input value={serviceForm.issue} onChange={e=>setField("issue", e.target.value)} /></label>
+        <label><div className="muted" style={{marginBottom:4}}>Servis adı</div><input value={serviceForm.serviceName} onChange={e=>setField("serviceName", e.target.value)} /></label>
+      </div>
+      <label><div className="muted" style={{marginBottom:4}}>Servis notu</div><textarea value={serviceForm.serviceNote} onChange={e=>setField("serviceNote", e.target.value)} /></label>
+      <label style={{display:"flex", alignItems:"center", gap:10}}>
+        <input style={{width:18,height:18}} type="checkbox" checked={serviceForm.changed} onChange={e=>setField("changed", e.target.checked)} />
+        <span>Değişim yapıldı</span>
+      </label>
+      {serviceForm.changed && (
+        <div className="service-card">
+          <div className="grid2">
+            <label><div className="muted" style={{marginBottom:4}}>Yeni ürün adı</div><input value={serviceForm.changedProductName} onChange={e=>setField("changedProductName", e.target.value)} /></label>
+            <label><div className="muted" style={{marginBottom:4}}>Yeni model adı</div><input value={serviceForm.changedModelName} onChange={e=>setField("changedModelName", e.target.value)} /></label>
+            <label><div className="muted" style={{marginBottom:4}}>Yeni seri no</div><input value={serviceForm.changedSerialNo} onChange={e=>setField("changedSerialNo", e.target.value)} /></label>
+          </div>
+        </div>
+      )}
+      <button className="btn btn-primary" style={{marginTop:10}} onClick={onAdd}>Servis Kaydı Ekle</button>
+    </div>
+  );
+}
+
 function App(){
   const [themeKey, setThemeKey] = useState("royal_navy");
+  const [themeLibraryOpen, setThemeLibraryOpen] = useState(false);
   const [scenes,setScenes]=useState(starter);
   const [view,setView]=useState("home");
   const [activeSceneId,setActiveSceneId]=useState("");
@@ -457,6 +528,7 @@ function App(){
   const [roomName,setRoomName]=useState("");
   const [itemForm,setItemForm]=useState(emptyItemForm());
   const [editForm,setEditForm]=useState(emptyItemForm());
+  const [serviceForm,setServiceForm]=useState({ date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" });
   const [draggingId,setDraggingId]=useState(null);
   const sceneRef=useRef(null);
 
@@ -480,7 +552,7 @@ function App(){
   function addItem(){
     if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return;
     const pos = activeRoom ? defaultPos(activeRoom.items.length) : {x:50,y:50};
-    const next={id:mkid(), ...itemForm, x:pos.x, y:pos.y, docs:[...(itemForm.invoiceFiles||[])]};
+    const next={id:mkid(), ...itemForm, x:pos.x, y:pos.y, docs:[...(itemForm.invoiceFiles||[])], services:[]};
     setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:s.subs.map(r=>r.id===activeRoomId?{...r,items:[...r.items,next]}:r)}:s));
     setItemForm(emptyItemForm());
     setModal(null);
@@ -497,6 +569,23 @@ function App(){
     (editForm.invoiceFiles || []).forEach(f => mergedDocs.push(f));
     updateItem(activeItem.id, i => ({ ...i, ...editForm, docs: mergedDocs }));
     setModal(null);
+  }
+  function addServiceRecord(){
+    if(!activeItem || !serviceForm.date || !serviceForm.status) return;
+    updateItem(activeItem.id, i => {
+      const nextServices = [...(i.services || []), { id: mkid(), ...serviceForm }];
+      let updated = { ...i, services: nextServices };
+      if (serviceForm.changed) {
+        updated = {
+          ...updated,
+          name: serviceForm.changedProductName || updated.name,
+          modelName: serviceForm.changedModelName || updated.modelName,
+          serialNo: serviceForm.changedSerialNo || updated.serialNo
+        };
+      }
+      return updated;
+    });
+    setServiceForm({ date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" });
   }
   function startDrag(itemId, e){ e.preventDefault(); e.stopPropagation(); setDraggingId(itemId); }
   function moveDrag(e){
@@ -516,9 +605,14 @@ function App(){
       <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
       <div className="container">
         <div className="hero" style={{cursor:"default"}}>
-          <div style={{fontSize:18,fontWeight:700}}>Hazır Tema Kütüphanesi</div>
-          <div className="muted" style={{marginTop:4}}>Temaları sınıflandırdım ve isimlendirdim</div>
-          {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
+          <div className="theme-library-head" onClick={()=>setThemeLibraryOpen(v=>!v)}>
+            <div>
+              <div style={{fontSize:18,fontWeight:700}}>Tema Kütüphanesi</div>
+              <div className="muted" style={{marginTop:4}}>Temaları sınıflandırdım ve isimlendirdim</div>
+            </div>
+            <button className="btn btn-dark">{themeLibraryOpen ? "Gizle" : "Göster"}</button>
+          </div>
+          {themeLibraryOpen && Object.entries(THEME_GROUPS).map(([groupName, group]) => (
             <div key={groupName}>
               <div className="theme-section-title">{groupName}</div>
               <div className="theme-grid">
@@ -581,7 +675,7 @@ function App(){
           >
             <ProductIcon item={item} />
             <div className="item-name">{item.name}</div>
-            {item.model && <div className="item-model">{item.model}</div>}
+            {(item.modelName || item.model) && <div className="item-model">{item.modelName || item.model}</div>}
             {item.color && <div className="item-color">{item.color}</div>}
           </div>;
         })}
@@ -603,22 +697,32 @@ function App(){
             <ProductIcon item={activeItem} />
           </div>
           <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>
-          {activeItem.model && <div className="muted" style={{marginTop:4}}>{activeItem.model}</div>}
+          {(activeItem.modelName || activeItem.model) && <div className="muted" style={{marginTop:4}}>Model adı: {activeItem.modelName || activeItem.model}</div>}
+          {activeItem.modelNumber && <div className="muted" style={{marginTop:4}}>Model numarası: {activeItem.modelNumber}</div>}
+          {activeItem.serialNo && <div className="muted" style={{marginTop:4}}>Seri no: {activeItem.serialNo}</div>}
           {activeItem.color && <div className="muted" style={{marginTop:4}}>Renk: {activeItem.color}</div>}
           <div className="muted" style={{marginTop:4}}>{activeItem.category}</div>
         </div>
         <div className="grid2">
           <div className="mini"><div className="muted">Marka</div><div>{activeItem.brand || "-"}</div></div>
-          <div className="mini"><div className="muted">Model</div><div>{activeItem.model || "-"}</div></div>
+          <div className="mini"><div className="muted">Model adı</div><div>{activeItem.modelName || activeItem.model || "-"}</div></div>
+          <div className="mini"><div className="muted">Model numarası</div><div>{activeItem.modelNumber || "-"}</div></div>
+          <div className="mini"><div className="muted">Seri no</div><div>{activeItem.serialNo || "-"}</div></div>
+          <div className="mini"><div className="muted">Edinme şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
+          <div className="mini"><div className="muted">{(ACQUISITION_OPTIONS[activeItem.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"]).dateLabel}</div><div>{activeItem.acquisitionDate || "-"}</div></div>
+          <div className="mini"><div className="muted">{(ACQUISITION_OPTIONS[activeItem.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"]).valueLabel}</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>
           <div className="mini"><div className="muted">Renk</div><div>{activeItem.color || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Tarihi</div><div>{activeItem.acquisitionDate || "-"}</div></div>
-          <div className="mini"><div className="muted">Satın Alma Değeri</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>
         </div>
         <div className="section">
           <div style={{fontWeight:700,marginBottom:8}}>Belgeler</div>
           {(activeItem.docs || []).length === 0 && <div className="muted">Belge yok</div>}
           {(activeItem.docs || []).map(d => <span key={d.id} className="doc-pill">{d.type}: {d.name}</span>)}
+        </div>
+        <ServiceForm serviceForm={serviceForm} setServiceForm={setServiceForm} onAdd={addServiceRecord} />
+        <div className="section">
+          <div style={{fontWeight:700,marginBottom:8}}>Servis Geçmişi</div>
+          {(activeItem.services || []).length === 0 && <div className="muted">Servis kaydı yok</div>}
+          {(activeItem.services || []).map(s => <div key={s.id} className="service-card"><div><b>{s.date}</b> · {s.status}</div>{s.issue && <div className="muted" style={{marginTop:4}}>Arıza: {s.issue}</div>}{s.serviceName && <div className="muted" style={{marginTop:4}}>Servis: {s.serviceName}</div>}{s.serviceNote && <div className="muted" style={{marginTop:4}}>Not: {s.serviceNote}</div>}{s.changed && <div className="muted" style={{marginTop:4}}>Değişim: {s.changedProductName || "-"} / {s.changedModelName || "-"} / {s.changedSerialNo || "-"}</div>}</div>)}
         </div>
       </div>
       {modal==="edit"&&<Modal title="Eşyayı Düzenle" onClose={()=>setModal(null)}><ItemForm form={editForm} setForm={setEditForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={saveEdit}>Güncelle</button></Modal>}
@@ -630,4 +734,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 </body>
 </html>
- 

@@ -41,10 +41,16 @@
       font-size:38px; background: linear-gradient(135deg, var(--accentSoft), var(--card2));
       border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
     }
-    .section-strip {
-      padding: 2px 2px 14px 2px;
-      cursor: pointer;
-      user-select: none;
+    .hero-actions { display:flex; gap:8px; align-items:center; }
+    .section-strip-button {
+      display:flex; align-items:center; justify-content:space-between;
+      border:1px solid var(--line);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--card)), var(--card2));
+      border-radius:20px;
+      padding:16px 18px;
+      margin-bottom:14px;
+      cursor:pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
     }
     .section-strip-title {
       font-size: 20px;
@@ -53,23 +59,18 @@
       color: var(--text);
       margin-bottom: 6px;
     }
-    .section-strip-sub {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .theme-library-head {
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      cursor:pointer;
-    }
+    .section-strip-sub { color: var(--muted); font-size: 13px; }
+    .theme-library-head { display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; }
     .theme-section-title { font-size: 14px; font-weight: 700; margin: 14px 0 8px; color: var(--muted); }
     .theme-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
     .theme-card {
-      border:1px solid var(--line); border-radius:16px; padding:10px; background: var(--card2); cursor:pointer;
-      display:flex; gap:10px; align-items:center;
+      border:1px solid var(--line); border-radius:16px; padding:10px; background: var(--card2);
+      cursor:pointer; display:flex; gap:10px; align-items:center;
     }
     .theme-card.active { outline: 2px solid var(--accent); }
     .theme-preview {
-      width:54px; height:54px; border-radius:14px; flex-shrink:0; border:1px solid rgba(255,255,255,.14);
+      width:54px; height:54px; border-radius:14px; flex-shrink:0;
+      border:1px solid rgba(255,255,255,.14);
     }
     .color-lab {
       background: var(--card2);
@@ -104,14 +105,8 @@
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .muted { color: var(--muted); font-size:12px; }
     .btn { border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:700; }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color:#fff;
-    }
-    .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color:#fff;
-    }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color:#fff; }
     .btn-dark { background: var(--card2); color: var(--text); border:1px solid var(--line); }
     .scene-shell {
       height: calc(100vh - 57px);
@@ -120,9 +115,7 @@
       position: relative;
       -webkit-overflow-scrolling: touch;
     }
-    .scene-shell.lock-scroll {
-      overflow: hidden;
-    }
+    .scene-shell.lock-scroll { overflow: hidden; }
     .scene {
       min-height: 900px;
       min-width: 100%;
@@ -152,16 +145,14 @@
     }
     .item-node {
       position:absolute; transform:translate(-50%,-50%);
-      cursor:default; text-align:center; z-index:4; touch-action:none; user-select:none;
+      cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none;
       width: 150px;
-      transition: transform .12s ease;
-    }
-    .item-node.pressing {
-      transform: translate(-50%,-50%) scale(1.03);
+      transition: transform .08s ease;
     }
     .item-node.dragging {
       z-index:20;
       transform: translate(-50%,-50%) scale(1.07);
+      cursor:grabbing;
     }
     .item-name {
       margin-top:6px; font-size:13px; color:var(--text);
@@ -200,7 +191,7 @@
     .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; }
     .doc-pill {
       display:inline-block; background:var(--card2); border:1px solid var(--line); border-radius:999px;
-      padding:6px 10px; font-size:11px; margin:4px 6px 0 0;
+      padding:6px 10px; font-size:11px; margin:4px 6px 0 0; cursor:pointer;
     }
     .svg-icon { width: 104px; height: 104px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
     .hint { margin-top: 8px; font-size: 11px; color: var(--muted); }
@@ -211,6 +202,13 @@
       border-radius:14px;
       padding:12px;
       margin-top:8px;
+    }
+    .file-view {
+      width:100%;
+      min-height:420px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
     }
     @media (max-width: 760px) { .grid2, .theme-grid, .nature-grid { grid-template-columns:1fr; } }
   </style>
@@ -331,8 +329,7 @@ const COLOR_HEX = {
 const starter = [
   { id:"1", name:"Evim", subs:[
     { id:"s1", name:"Salon", items:[
-      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", brand:"Apple", modelName:"iPhone 15 Pro", modelNumber:"A3104", serialNo:"IP15P-001", color:"Siyah", x:50, y:18, docs:[{id:"d1",name:"Fatura.pdf",type:"Fatura"}], services:[] },
-      { id:"i2", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-03-10", purchasePrice:"32000", brand:"Samsung", modelName:"S24", modelNumber:"SM-S921B", serialNo:"S24-002", color:"Mavi", x:50, y:54, docs:[], services:[] }
+      { id:"i1", category:"Elektronik Eşyalar", name:"Telefon", type:"Elektronik", acquisitionType:"Satın alındı", acquisitionDate:"2026-04-12", purchasePrice:"45000", guaranteeDuration:"24 ay", extraWarranty:"Hayır", extraWarrantyTerms:"", brand:"Apple", modelName:"iPhone 15 Pro", modelNumber:"A3104", serialNo:"IP15P-001", color:"Siyah", x:50, y:18, docs:[{id:"d1",name:"Fatura.pdf",type:"Fatura", url:"https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}], services:[] }
     ] }
   ] }
 ];
@@ -361,6 +358,7 @@ function emptyItemForm(){
     category:"", selectedName:"", customName:"", name:"", type:"",
     acquisitionType:"Satın alındı",
     acquisitionDate:tdy(), purchasePrice:"",
+    guaranteeDuration:"", extraWarranty:"Hayır", extraWarrantyTerms:"",
     brand:"", modelName:"", modelNumber:"", serialNo:"",
     color:"", invoiceFiles:[]
   };
@@ -400,138 +398,6 @@ function ProductIcon({ item }) {
       <path d="M14 66 H86 L78 78 H22 Z" fill="#31405f" stroke="#dbe6ff" strokeWidth="2.3" strokeLinejoin="round"/>
     </svg>
   );
-  if (name.includes("tablet")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="20" y="16" rx="10" ry="10" width="60" height="68" fill={c} stroke="#e6edff" strokeWidth="2.3"/>
-      <rect x="25" y="22" rx="6" ry="6" width="50" height="54" fill="#0f172a" stroke="#a9bbff" strokeWidth="1.2"/>
-      <circle cx="50" cy="80" r="2.4" fill="#dbe6ff"/>
-    </svg>
-  );
-  if (name.includes("monit")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="16" y="18" rx="8" ry="8" width="68" height="44" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2.3"/>
-      <rect x="22" y="24" rx="5" ry="5" width="56" height="32" fill={c} opacity="0.75"/>
-      <line x1="50" y1="62" x2="50" y2="74" {...common} /><line x1="34" y1="78" x2="66" y2="78" {...common} />
-    </svg>
-  );
-  if (name.includes("hoparl")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="28" y="16" rx="10" ry="10" width="44" height="68" fill={c} stroke="#e6edff" strokeWidth="2.3"/>
-      <circle cx="50" cy="40" r="12" fill="#0f172a" stroke="#dbe6ff" strokeWidth="1.8"/>
-      <circle cx="50" cy="62" r="7" fill="#0f172a" stroke="#dbe6ff" strokeWidth="1.6"/>
-    </svg>
-  );
-  if (name.includes("koltuk") || name.includes("kanepe")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="20" y="42" rx="10" ry="10" width="60" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2.3"/>
-      <rect x="24" y="28" rx="9" ry="9" width="52" height="18" fill={c} opacity="0.86" stroke="#f4e7d7" strokeWidth="2.1"/>
-      <rect x="14" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
-      <rect x="74" y="40" rx="8" ry="8" width="12" height="24" fill={c} stroke="#f4e7d7" strokeWidth="2"/>
-      <line x1="26" y1="66" x2="24" y2="77" stroke="#f4e7d7" strokeWidth="2"/><line x1="74" y1="66" x2="76" y2="77" stroke="#f4e7d7" strokeWidth="2"/>
-    </svg>
-  );
-  if (name.includes("masa")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="20" y="26" rx="7" ry="7" width="60" height="12" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
-      <line x1="28" y1="38" x2="24" y2="78" stroke="#f2efe8" strokeWidth="2.2"/><line x1="72" y1="38" x2="76" y2="78" stroke="#f2efe8" strokeWidth="2.2"/>
-      <line x1="38" y1="38" x2="38" y2="76" stroke="#f2efe8" strokeWidth="2"/><line x1="62" y1="38" x2="62" y2="76" stroke="#f2efe8" strokeWidth="2"/>
-    </svg>
-  );
-  if (name.includes("sandalye") || name.includes("koltuğu")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="34" y="22" rx="8" ry="8" width="32" height="20" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
-      <rect x="30" y="46" rx="7" ry="7" width="40" height="12" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
-      <line x1="36" y1="58" x2="32" y2="80" stroke="#f2efe8" strokeWidth="2.2"/><line x1="64" y1="58" x2="68" y2="80" stroke="#f2efe8" strokeWidth="2.2"/>
-      <line x1="36" y1="42" x2="36" y2="58" stroke="#f2efe8" strokeWidth="2"/><line x1="64" y1="42" x2="64" y2="58" stroke="#f2efe8" strokeWidth="2"/>
-    </svg>
-  );
-  if (name.includes("yatak")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="16" y="38" rx="8" ry="8" width="68" height="26" fill={c} stroke="#f2efe8" strokeWidth="2.2"/>
-      <rect x="20" y="28" rx="8" ry="8" width="20" height="12" fill="#f6efe8" stroke="#e6ded4" strokeWidth="1.5"/>
-      <line x1="18" y1="64" x2="18" y2="80" stroke="#f2efe8" strokeWidth="2.2"/><line x1="82" y1="64" x2="82" y2="80" stroke="#f2efe8" strokeWidth="2.2"/>
-    </svg>
-  );
-  if (name.includes("dolap") || name.includes("şifonyer") || name.includes("kitaplık")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="26" y="14" rx="8" ry="8" width="48" height="72" fill={c} stroke="#efe7dc" strokeWidth="2.2"/>
-      <line x1="50" y1="14" x2="50" y2="86" stroke="#efe7dc" strokeWidth="2"/><circle cx="46" cy="50" r="2" fill="#efe7dc"/><circle cx="54" cy="50" r="2" fill="#efe7dc"/>
-    </svg>
-  );
-  if (name.includes("buzdol")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="28" y="10" rx="10" ry="10" width="44" height="80" fill={c} stroke="#e8f5ff" strokeWidth="2.3"/>
-      <line x1="28" y1="46" x2="72" y2="46" stroke="#e8f5ff" strokeWidth="2"/>
-      <line x1="64" y1="28" x2="64" y2="38" stroke="#e8f5ff" strokeWidth="2.2"/><line x1="64" y1="58" x2="64" y2="74" stroke="#e8f5ff" strokeWidth="2.2"/>
-    </svg>
-  );
-  if (name.includes("çamaşır") || name.includes("bulaşık") || name.includes("kurutma")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="24" y="12" rx="10" ry="10" width="52" height="76" fill={c} stroke="#e8f5ff" strokeWidth="2.2"/>
-      <rect x="24" y="12" rx="10" ry="10" width="52" height="16" fill="#dbe6ff" opacity="0.35"/>
-      <circle cx="50" cy="54" r="18" fill="#0f172a" stroke="#dbe6ff" strokeWidth="2"/>
-      <circle cx="50" cy="54" r="10" fill={c} opacity="0.65"/>
-    </svg>
-  );
-  if (name.includes("fırın") || name.includes("airfryer") || name.includes("tost")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="22" y="20" rx="10" ry="10" width="56" height="58" fill={c} stroke="#f8efe2" strokeWidth="2.2"/>
-      <rect x="30" y="34" rx="6" ry="6" width="40" height="24" fill="#24160e" stroke="#f8efe2" strokeWidth="1.6"/>
-      <circle cx="34" cy="26" r="2" fill="#f8efe2"/><circle cx="42" cy="26" r="2" fill="#f8efe2"/><circle cx="50" cy="26" r="2" fill="#f8efe2"/>
-    </svg>
-  );
-  if (name.includes("kahve")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="28" y="22" rx="8" ry="8" width="32" height="42" fill={c} stroke="#f5efe9" strokeWidth="2.2"/>
-      <path d="M60 30 Q76 30 76 42 Q76 54 60 54" fill="none" stroke="#f5efe9" strokeWidth="2.2"/>
-      <line x1="36" y1="18" x2="34" y2="8" stroke="#f5efe9" strokeWidth="2"/><line x1="46" y1="18" x2="46" y2="8" stroke="#f5efe9" strokeWidth="2"/>
-      <rect x="24" y="64" rx="5" ry="5" width="44" height="8" fill="#f5efe9"/>
-    </svg>
-  );
-  if (name.includes("mikrodalga")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="16" y="28" rx="8" ry="8" width="68" height="38" fill={c} stroke="#e8f1ff" strokeWidth="2.2"/>
-      <rect x="22" y="34" rx="5" ry="5" width="40" height="26" fill="#0f172a" stroke="#e8f1ff" strokeWidth="1.4"/>
-      <circle cx="72" cy="40" r="2.5" fill="#e8f1ff"/><circle cx="72" cy="50" r="2.5" fill="#e8f1ff"/>
-    </svg>
-  );
-  if (name.includes("saat")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="42" y="10" rx="6" ry="6" width="16" height="16" fill={c} stroke="#e8f1ff" strokeWidth="2"/>
-      <circle cx="50" cy="50" r="22" fill={c} stroke="#e8f1ff" strokeWidth="2.2"/>
-      <line x1="50" y1="50" x2="50" y2="36" stroke="#e8f1ff" strokeWidth="2.2"/><line x1="50" y1="50" x2="61" y2="56" stroke="#e8f1ff" strokeWidth="2.2"/>
-      <rect x="42" y="74" rx="6" ry="6" width="16" height="16" fill={c} stroke="#e8f1ff" strokeWidth="2"/>
-    </svg>
-  );
-  if (name.includes("gözlük")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <circle cx="34" cy="50" r="14" fill="none" stroke={c} strokeWidth="6"/>
-      <circle cx="66" cy="50" r="14" fill="none" stroke={c} strokeWidth="6"/>
-      <line x1="48" y1="50" x2="52" y2="50" stroke={c} strokeWidth="4"/>
-      <line x1="20" y1="46" x2="8" y2="40" stroke={c} strokeWidth="4"/><line x1="80" y1="46" x2="92" y2="40" stroke={c} strokeWidth="4"/>
-    </svg>
-  );
-  if (name.includes("çanta") || name.includes("valiz")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <rect x="24" y="28" rx="10" ry="10" width="52" height="46" fill={c} stroke="#f5efe9" strokeWidth="2.2"/>
-      <path d="M38 28 Q38 16 50 16 Q62 16 62 28" fill="none" stroke="#f5efe9" strokeWidth="2.2"/>
-    </svg>
-  );
-  if (name.includes("araba")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <path d="M20 58 L28 42 H70 L80 58 V68 H20 Z" fill={c} stroke="#eef4ff" strokeWidth="2.2" strokeLinejoin="round"/>
-      <circle cx="32" cy="68" r="7" fill="#111827" stroke="#eef4ff" strokeWidth="2"/>
-      <circle cx="68" cy="68" r="7" fill="#111827" stroke="#eef4ff" strokeWidth="2"/>
-      <path d="M36 42 L46 30 H62 L70 42" fill="#9ac1ff" opacity="0.65" stroke="#eef4ff" strokeWidth="1.4"/>
-    </svg>
-  );
-  if (name.includes("bisiklet")) return (
-    <svg className="svg-icon" viewBox="0 0 100 100">
-      <circle cx="28" cy="66" r="12" fill="none" stroke={c} strokeWidth="4"/>
-      <circle cx="72" cy="66" r="12" fill="none" stroke={c} strokeWidth="4"/>
-      <path d="M28 66 L44 48 L54 66 L40 66 M44 48 H60 L72 66 M54 36 L48 48" fill="none" stroke={c} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
   return (
     <svg className="svg-icon" viewBox="0 0 100 100">
       <rect x="24" y="24" rx="12" ry="12" width="52" height="52" fill={c} stroke="#dbe6ff" strokeWidth="2.3"/>
@@ -557,7 +423,7 @@ function ItemForm({ form, setForm }){
   }
   function handleCustomName(value){ setForm(prev=>({ ...prev, customName:value, name:value })); }
   function handleInvoiceFiles(e){
-    const files = Array.from(e.target.files || []).map(f => ({ id: mkid(), name: f.name, type: "Fatura" }));
+    const files = Array.from(e.target.files || []).map(f => ({ id: mkid(), name: f.name, type: "Fatura", url: URL.createObjectURL(f) }));
     setForm(prev => ({ ...prev, invoiceFiles: files }));
   }
   return <>
@@ -580,7 +446,12 @@ function ItemForm({ form, setForm }){
       <label><div className="muted" style={{marginBottom:4}}>Edinme şekli</div><select value={form.acquisitionType} onChange={e=>setField("acquisitionType",e.target.value)}>{Object.keys(ACQUISITION_OPTIONS).map(k=><option key={k} value={k}>{k}</option>)}</select></label>
       <label><div className="muted" style={{marginBottom:4}}>{acquisitionMeta.dateLabel}</div><input value={form.acquisitionDate} onChange={e=>setField("acquisitionDate",e.target.value)} /></label>
       <label><div className="muted" style={{marginBottom:4}}>{acquisitionMeta.valueLabel}</div><input value={form.purchasePrice} onChange={e=>setField("purchasePrice",e.target.value)} /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Garanti Süresi</div><input value={form.guaranteeDuration || ""} onChange={e=>setField("guaranteeDuration",e.target.value)} placeholder="24 ay / 2 yıl" /></label>
+      <label><div className="muted" style={{marginBottom:4}}>Ek Garanti Yapıldımı</div><select value={form.extraWarranty || "Hayır"} onChange={e=>setField("extraWarranty",e.target.value)}><option value="Hayır">Hayır</option><option value="Evet">Evet</option></select></label>
     </div>
+    {form.extraWarranty === "Evet" && (
+      <label><div className="muted" style={{marginBottom:4}}>Ek garanti koşulları</div><textarea value={form.extraWarrantyTerms || ""} onChange={e=>setField("extraWarrantyTerms",e.target.value)} placeholder="Elle doldurunuz" /></label>
+    )}
     <div className="section" style={{marginTop:10}}>
       <div style={{fontWeight:700,marginBottom:8}}>Fatura Ekle</div>
       <label>
@@ -636,18 +507,18 @@ function App(){
   const [activeItemId,setActiveItemId]=useState("");
   const [modal,setModal]=useState(null);
   const [sceneName,setSceneName]=useState("");
+  const [sceneEditName,setSceneEditName]=useState("");
   const [roomName,setRoomName]=useState("");
   const [itemForm,setItemForm]=useState(emptyItemForm());
   const [editForm,setEditForm]=useState(emptyItemForm());
   const [serviceForm,setServiceForm]=useState(emptyServiceForm());
   const [draggingId,setDraggingId]=useState(null);
-  const [pressingId,setPressingId]=useState(null);
   const [sceneScale, setSceneScale] = useState(1);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [sceneDeleteConfirm, setSceneDeleteConfirm] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
   const sceneRef=useRef(null);
   const colorBarRef=useRef(null);
-  const pressTimerRef = useRef(null);
-  const pressStartRef = useRef({ x: 0, y: 0 });
   const pinchRef=useRef({ distance: null, startScale: 1 });
 
   useEffect(() => {
@@ -673,6 +544,8 @@ function App(){
   function goRoom(id){ setActiveRoomId(id); setView("room"); }
   function goItem(id){ setActiveItemId(id); setView("item"); }
   function addScene(){ if(!sceneName.trim()) return; const next={id:mkid(),name:sceneName.trim(),subs:[]}; setScenes(prev=>[...prev,next]); setSceneName(""); setModal(null); }
+  function saveSceneEdit(){ if(!sceneEditName.trim() || !activeSceneId) return; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,name:sceneEditName.trim()}:s)); setModal(null); }
+  function deleteScene(){ if(!sceneDeleteConfirm) return; setScenes(prev=>prev.filter(s=>s.id!==sceneDeleteConfirm)); setSceneDeleteConfirm(null); setView("home"); setActiveSceneId(""); }
   function addRoom(){ if(!roomName.trim()||!activeSceneId) return; const next={id:mkid(),name:roomName.trim(),items:[]}; setScenes(prev=>prev.map(s=>s.id===activeSceneId?{...s,subs:[...s.subs,next]}:s)); setRoomName(""); setModal(null); }
   function addItem(){
     if(!itemForm.name.trim()||!activeSceneId||!activeRoomId) return;
@@ -722,38 +595,13 @@ function App(){
     setServiceForm(emptyServiceForm());
   }
 
-  function beginLongPress(itemId, clientX, clientY){
-    clearTimeout(pressTimerRef.current);
-    setPressingId(itemId);
-    pressStartRef.current = { x: clientX, y: clientY };
-    pressTimerRef.current = setTimeout(() => {
-      setDraggingId(itemId);
-    }, 320);
-  }
-  function cancelLongPress(){
-    clearTimeout(pressTimerRef.current);
-    pressTimerRef.current = null;
-    if (!draggingId) setPressingId(null);
-  }
-  function startPressMouse(itemId, e){
+  function startDrag(itemId, e){
     e.preventDefault();
-    beginLongPress(itemId, e.clientX, e.clientY);
-  }
-  function startPressTouch(itemId, e){
-    const t = e.touches[0];
-    beginLongPress(itemId, t.clientX, t.clientY);
+    setDraggingId(itemId);
   }
   function moveDrag(e){
     const point = e.touches ? e.touches[0] : e;
-    if (!draggingId) {
-      if (pressingId) {
-        const dx = Math.abs(point.clientX - pressStartRef.current.x);
-        const dy = Math.abs(point.clientY - pressStartRef.current.y);
-        if (dx > 8 || dy > 8) cancelLongPress();
-      }
-      return;
-    }
-    if(!sceneRef.current) return;
+    if(!draggingId || !sceneRef.current) return;
     e.preventDefault && e.preventDefault();
     const rect = sceneRef.current.getBoundingClientRect();
     let x = ((point.clientX - rect.left) / rect.width) * 100;
@@ -762,15 +610,8 @@ function App(){
     y = Math.max(12, Math.min(88, y));
     updateItem(draggingId, i => ({ ...i, x, y }));
   }
-  function endDrag(){
-    clearTimeout(pressTimerRef.current);
-    pressTimerRef.current = null;
-    setDraggingId(null);
-    setPressingId(null);
-  }
-  function handleItemClick(itemId){
-    if (!draggingId) goItem(itemId);
-  }
+  function endDrag(){ setDraggingId(null); }
+  function handleItemDoubleClick(itemId){ if (!draggingId) goItem(itemId); }
 
   function updateHueFromClientX(clientX){
     const rect = colorBarRef.current.getBoundingClientRect();
@@ -794,7 +635,7 @@ function App(){
     if (e.touches.length === 2) {
       pinchRef.current.distance = distance(e.touches[0], e.touches[1]);
       pinchRef.current.startScale = sceneScale;
-      cancelLongPress();
+      setDraggingId(null);
     }
   }
   function onSceneTouchMove(e){
@@ -815,9 +656,12 @@ function App(){
     {view==="home" && <>
       <TopBar title="Eşyamın Hayatı" sub={`${allItems.length} eşya · ₺${totalValue}`} right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>} />
       <div className="container">
-        <div className="section-strip" onClick={()=>setThemeLibraryOpen(v=>!v)}>
-          <div className="section-strip-title">Tema</div>
-          <div className="section-strip-sub">Tema alanını açmak için buraya dokun</div>
+        <div className="section-strip-button" onClick={()=>setThemeLibraryOpen(v=>!v)}>
+          <div>
+            <div className="section-strip-title">Tema</div>
+            <div className="section-strip-sub">Tema alanını açmak için dokun</div>
+          </div>
+          <button className="btn btn-dark">{themeLibraryOpen ? "Kapat" : "Aç"}</button>
         </div>
 
         {themeLibraryOpen && <div className="hero" style={{cursor:"default"}}>
@@ -826,7 +670,6 @@ function App(){
               <div style={{fontSize:16,fontWeight:700}}>Hazır Tema Setleri</div>
               <div className="muted" style={{marginTop:4}}>Ön tanımlı uyumlu temalar</div>
             </div>
-            <button className="btn btn-dark" onClick={()=>setThemeLibraryOpen(false)}>Kapat</button>
           </div>
           {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
             <div key={groupName}>
@@ -878,15 +721,11 @@ function App(){
           </div>
         </div>}
 
-        <div className="hero" style={{cursor:"default"}}>
-          <div style={{fontSize:18,fontWeight:700}}>İkon Kapsamı</div>
-          <div className="muted" style={{marginTop:4}}>Elektronik, mobilya, beyaz eşya, mutfak, aydınlatma, kişisel ve araç kategorileri için genişletilmiş çizim seti eklendi.</div>
-          <div className="hint">Tür ve model yazıları kaldırıldı. Eşya adı küçük etiket olarak kaldı.</div>
-        </div>
-
-        {scenes.map(s=><div key={s.id} className="hero" onClick={()=>goScene(s.id)}><div className="hero-grid"><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div></div>)}
+        {scenes.map(s=><div key={s.id} className="hero" onClick={()=>goScene(s.id)}><div className="row"><div className="hero-grid" style={{flex:1}}><div className="hero-icon">{detectSceneIcon(s.name)}</div><div><div style={{fontSize:20,fontWeight:700}}>{s.name}</div><div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div></div></div><div className="hero-actions"><button className="btn btn-dark" onClick={(e)=>{ e.stopPropagation(); setActiveSceneId(s.id); setSceneEditName(s.name); setModal("sceneEdit"); }}>Düzenle</button><button className="btn btn-danger" onClick={(e)=>{ e.stopPropagation(); setSceneDeleteConfirm(s.id); }}>Sil</button></div></div></div>)}
       </div>
       {modal==="scene"&&<Modal title="Yeni Başlık" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneName} onChange={e=>setSceneName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={addScene}>Oluştur</button></Modal>}
+      {modal==="sceneEdit"&&<Modal title="Ana Başlığı Düzenle" onClose={()=>setModal(null)}><label><div className="muted" style={{marginBottom:4}}>Başlık Adı</div><input value={sceneEditName} onChange={e=>setSceneEditName(e.target.value)} /></label><button className="btn btn-primary" style={{width:"100%"}} onClick={saveSceneEdit}>Kaydet</button></Modal>}
+      {sceneDeleteConfirm && <Modal title="Ana Başlığı Sil" onClose={()=>setSceneDeleteConfirm(null)}><div className="muted" style={{marginBottom:16}}>Bu ana başlık silinecek. Emin misin?</div><div style={{display:"flex", gap:8}}><button className="btn btn-dark" style={{flex:1}} onClick={()=>setSceneDeleteConfirm(null)}>Vazgeç</button><button className="btn btn-danger" style={{flex:1}} onClick={deleteScene}>Sil</button></div></Modal>}
     </>}
 
     {view==="scene"&&activeScene && <>
@@ -900,7 +739,7 @@ function App(){
     {view==="room"&&activeRoom && <>
       <TopBar
         title={activeRoom.name}
-        sub="Eşyaya kısa süre basılı tut, sonra sürükle"
+        sub="Sürükle bırak · açmak için çift tıkla"
         onBack={()=>setView("scene")}
         right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>}
       />
@@ -927,14 +766,13 @@ function App(){
           {activeRoom.items.map((item, index)=>{
             const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
             const isDragging = draggingId === item.id;
-            const isPressing = pressingId === item.id;
             return <div
               key={item.id}
-              className={`item-node ${isDragging ? "dragging" : ""} ${isPressing ? "pressing" : ""}`}
+              className={`item-node ${isDragging ? "dragging" : ""}`}
               style={{left:`${pos.x}%`, top:`${pos.y}%`}}
-              onMouseDown={(e)=>startPressMouse(item.id, e)}
-              onTouchStart={(e)=>startPressTouch(item.id, e)}
-              onClick={()=>handleItemClick(item.id)}
+              onMouseDown={(e)=>startDrag(item.id, e)}
+              onTouchStart={(e)=>startDrag(item.id, e)}
+              onDoubleClick={()=>handleItemDoubleClick(item.id)}
             >
               <ProductIcon item={item} />
               <div className="item-name">{item.name || "Eşya"}</div>
@@ -979,12 +817,14 @@ function App(){
           <div className="mini"><div className="muted">Edinme şekli</div><div>{activeItem.acquisitionType || "-"}</div></div>
           <div className="mini"><div className="muted">{(ACQUISITION_OPTIONS[activeItem.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"]).dateLabel}</div><div>{activeItem.acquisitionDate || "-"}</div></div>
           <div className="mini"><div className="muted">{(ACQUISITION_OPTIONS[activeItem.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"]).valueLabel}</div><div>{activeItem.purchasePrice ? "₺"+Number(activeItem.purchasePrice).toLocaleString("tr-TR") : "-"}</div></div>
-          <div className="mini"><div className="muted">Renk</div><div>{activeItem.color || "-"}</div></div>
+          <div className="mini"><div className="muted">Garanti Süresi</div><div>{activeItem.guaranteeDuration || "-"}</div></div>
+          <div className="mini"><div className="muted">Ek Garanti Yapıldımı</div><div>{activeItem.extraWarranty || "Hayır"}</div></div>
         </div>
+        {activeItem.extraWarranty === "Evet" && <div className="section"><div style={{fontWeight:700,marginBottom:8}}>Ek Garanti Koşulları</div><div className="muted">{activeItem.extraWarrantyTerms || "-"}</div></div>}
         <div className="section">
           <div style={{fontWeight:700,marginBottom:8}}>Belgeler</div>
           {(activeItem.docs || []).length === 0 && <div className="muted">Belge yok</div>}
-          {(activeItem.docs || []).map(d => <span key={d.id} className="doc-pill">{d.type}: {d.name}</span>)}
+          {(activeItem.docs || []).map(d => <span key={d.id} className="doc-pill" onClick={()=>setFilePreview(d)}>{d.type}: {d.name}</span>)}
         </div>
         <ServiceForm serviceForm={serviceForm} setServiceForm={setServiceForm} onAdd={addServiceRecord} />
         <div className="section">
@@ -995,6 +835,7 @@ function App(){
       </div>
       {modal==="edit"&&<Modal title="Eşyayı Düzenle" onClose={()=>setModal(null)}><ItemForm form={editForm} setForm={setEditForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={saveEdit}>Güncelle</button></Modal>}
       {deleteConfirm && <Modal title="Eşyayı Sil" onClose={()=>setDeleteConfirm(null)}><div className="muted" style={{marginBottom:16}}>Bu eşyayı silmek istediğine emin misin?</div><div style={{display:"flex", gap:8}}><button className="btn btn-dark" onClick={()=>setDeleteConfirm(null)} style={{flex:1}}>Vazgeç</button><button className="btn btn-danger" onClick={deleteActiveItem} style={{flex:1}}>Sil</button></div></Modal>}
+      {filePreview && <Modal title={filePreview.name} onClose={()=>setFilePreview(null)}><iframe className="file-view" src={filePreview.url}></iframe></Modal>}
     </>}
   </div>;
 }

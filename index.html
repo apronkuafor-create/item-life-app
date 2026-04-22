@@ -2,14 +2,14 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eşyamın Hayatı</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { overscroll-behavior: none; touch-action: pan-x pan-y; }
+    html, body { overscroll-behavior: none; }
     body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
     .app {
       min-height: 100vh;
@@ -17,7 +17,7 @@
         radial-gradient(circle at top right, var(--glow1) 0%, transparent 24%),
         radial-gradient(circle at bottom left, var(--glow2) 0%, transparent 20%),
         var(--bg);
-      transition: background .25s ease, color .25s ease;
+      transition: background .2s ease, color .2s ease;
     }
     .topbar {
       padding: 16px 18px;
@@ -55,6 +55,15 @@
     .theme-preview {
       width:54px; height:54px; border-radius:14px; flex-shrink:0; border:1px solid rgba(255,255,255,.14);
     }
+    .theme-live-wrap { margin-top: 12px; }
+    .theme-live-box {
+      border:1px solid var(--line); border-radius:18px; padding:12px; background: var(--card2);
+    }
+    .theme-live-preview {
+      height:56px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      margin-bottom:10px;
+    }
+    .theme-range { width:100%; }
     .card { border-radius: 18px; padding: 18px; margin-bottom: 12px; cursor:pointer; }
     .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .muted { color: var(--muted); font-size:13px; }
@@ -64,10 +73,17 @@
       color:#fff;
     }
     .btn-dark { background: var(--card2); color: var(--text); border:1px solid var(--line); }
-    .scene {
-      min-height: calc(100vh - 57px);
-      position: relative; overflow: hidden;
+    .scene-scroll {
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
       background: linear-gradient(180deg, color-mix(in srgb, var(--accentSoft) 60%, var(--card)) 0%, var(--card2) 100%);
+    }
+    .scene {
+      min-height: 920px;
+      position: relative; overflow: hidden;
+      transform-origin: top center;
     }
     .scene-grid {
       position:absolute; inset:0;
@@ -88,22 +104,41 @@
       padding:8px 14px; border-radius:12px; font-size:15px; font-weight:700; z-index:5;
       backdrop-filter: blur(10px);
     }
+    .zoom-ui {
+      position: sticky;
+      top: 58px;
+      z-index: 12;
+      padding: 10px 14px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
     .item-node {
       position:absolute; transform:translate(-50%,-50%);
-      cursor:grab; text-align:center; z-index:4; touch-action:none; user-select:none;
-      width: 154px;
+      cursor:grab; text-align:center; z-index:4; user-select:none;
+      width: 166px;
     }
     .item-node.dragging { cursor:grabbing; z-index:20; }
+    .item-type {
+      margin-bottom:6px; font-size:12px; color:var(--accent);
+      font-weight:700;
+      display:inline-block;
+      background: color-mix(in srgb, var(--card) 82%, transparent);
+      border:1px solid var(--line);
+      padding:3px 10px;
+      border-radius:999px;
+      max-width:152px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    }
     .item-name {
       margin-top:8px; font-size:14px; color:var(--text);
       background: color-mix(in srgb, var(--card) 80%, transparent);
       padding:4px 10px; border-radius:999px;
-      display:inline-block; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      display:inline-block; max-width:148px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       border: 1px solid var(--line); font-weight:700;
     }
     .item-model {
       margin-top:4px; font-size:12px; color:var(--muted);
-      display:block; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      display:block; max-width:148px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .item-color { margin-top:3px; font-size:11px; color:var(--accent); font-weight:700; }
     .section { border-radius:18px; padding:16px; margin-bottom:14px; }
@@ -130,7 +165,7 @@
       display:inline-block; background:var(--card2); border:1px solid var(--line); border-radius:999px;
       padding:6px 10px; font-size:11px; margin:4px 6px 0 0;
     }
-    .svg-icon { width: 104px; height: 104px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
+    .svg-icon { width: 112px; height: 112px; margin: 0 auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
     .hint { margin-top: 8px; font-size: 11px; color: var(--muted); }
     .service-card {
       display:block;
@@ -140,6 +175,7 @@
       padding:12px;
       margin-top:8px;
     }
+    .detail-title-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     @media (max-width: 760px) { .grid2, .theme-grid { grid-template-columns:1fr; } }
   </style>
 </head>
@@ -246,6 +282,7 @@ const starter = [
 
 function mkid(){ return Math.random().toString(36).slice(2,10); }
 function tdy(){ return new Date().toLocaleDateString("tr-TR"); }
+function defaultThemeKey(){ return "royal_navy"; }
 function emptyServiceForm(){ return { date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" }; }
 function emptyItemForm(){
   return {
@@ -259,6 +296,57 @@ function emptyItemForm(){
 function detectSceneIcon(name=""){ const t=name.toLowerCase(); if(t.includes("ev")) return "🏠"; if(t.includes("iş")||t.includes("ofis")) return "🏢"; if(t.includes("mağaza")||t.includes("salon")) return "🏬"; return "📦"; }
 function defaultPos(index){ const base=[{x:50,y:18},{x:50,y:54},{x:18,y:35},{x:82,y:35},{x:18,y:72},{x:82,y:72},{x:34,y:82},{x:66,y:82}]; return base[index] || {x:20+(index%3)*25,y:85}; }
 
+function hexToHsl(hex) {
+  hex = hex.replace('#','');
+  const r = parseInt(hex.substring(0,2),16)/255;
+  const g = parseInt(hex.substring(2,4),16)/255;
+  const b = parseInt(hex.substring(4,6),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch(max){
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      default: h = (r - g) / d + 4;
+    }
+    h /= 6;
+  }
+  return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+}
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2*l - 1)) * s;
+  const x = c * (1 - Math.abs((h/60) % 2 - 1));
+  const m = l - c/2;
+  let r=0,g=0,b=0;
+  if (0<=h && h<60){ r=c; g=x; b=0; }
+  else if (60<=h && h<120){ r=x; g=c; b=0; }
+  else if (120<=h && h<180){ r=0; g=c; b=x; }
+  else if (180<=h && h<240){ r=0; g=x; b=c; }
+  else if (240<=h && h<300){ r=x; g=0; b=c; }
+  else { r=c; g=0; b=x; }
+  const toHex = v => Math.round((v+m)*255).toString(16).padStart(2,'0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+function themeFromHue(h) {
+  return {
+    label: "Live Spectrum",
+    bg: hslToHex(h, 28, 10),
+    text: "#f4f6fb",
+    muted: "#aeb8c9",
+    card: hslToHex(h, 24, 15),
+    card2: hslToHex(h, 22, 19),
+    line: hslToHex(h, 24, 29),
+    accent: hslToHex(h, 86, 56),
+    accent2: hslToHex((h+28)%360, 84, 60),
+    accentSoft: hslToHex(h, 44, 22),
+    glow1: `hsla(${h}, 90%, 60%, .14)`,
+    glow2: `hsla(${(h+28)%360}, 85%, 60%, .08)`
+  };
+}
 function applyTheme(theme){
   const root = document.documentElement;
   Object.entries(theme).forEach(([k,v]) => { if(k !== "label") root.style.setProperty(`--${k}`, v); });
@@ -516,7 +604,7 @@ function ServiceForm({ serviceForm, setServiceForm, onAdd }) {
 }
 
 function App(){
-  const [themeKey, setThemeKey] = useState("royal_navy");
+  const [themeKey, setThemeKey] = useState(defaultThemeKey());
   const [themeLibraryOpen, setThemeLibraryOpen] = useState(false);
   const [scenes,setScenes]=useState(starter);
   const [view,setView]=useState("home");
@@ -528,21 +616,29 @@ function App(){
   const [roomName,setRoomName]=useState("");
   const [itemForm,setItemForm]=useState(emptyItemForm());
   const [editForm,setEditForm]=useState(emptyItemForm());
-  const [serviceForm,setServiceForm]=useState({ date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" });
+  const [serviceForm,setServiceForm]=useState(emptyServiceForm());
   const [draggingId,setDraggingId]=useState(null);
+  const [zoom, setZoom] = useState(1);
+  const [useLiveTheme, setUseLiveTheme] = useState(false);
+  const [liveHue, setLiveHue] = useState(250);
   const sceneRef=useRef(null);
 
   useEffect(() => {
-    for (const group of Object.values(THEME_GROUPS)) {
-      if (group[themeKey]) applyTheme(group[themeKey]);
+    if (useLiveTheme) {
+      applyTheme(themeFromHue(liveHue));
+    } else {
+      for (const group of Object.values(THEME_GROUPS)) {
+        if (group[themeKey]) applyTheme(group[themeKey]);
+      }
     }
-  }, [themeKey]);
+  }, [themeKey, useLiveTheme, liveHue]);
 
   const activeScene=useMemo(()=>scenes.find(s=>s.id===activeSceneId)||null,[scenes,activeSceneId]);
   const allItems=useMemo(()=>scenes.flatMap(s=>s.subs.flatMap(r=>r.items)),[scenes]);
   const totalValue=useMemo(()=>allItems.reduce((a,i)=>a+(parseFloat(i.purchasePrice)||0),0).toLocaleString("tr-TR"),[allItems]);
   const activeRoom=useMemo(()=>activeScene?activeScene.subs.find(r=>r.id===activeRoomId)||null:null,[activeScene,activeRoomId]);
   const activeItem=useMemo(()=>activeRoom?activeRoom.items.find(i=>i.id===activeItemId)||null:null,[activeRoom,activeItemId]);
+  const livePreviewTheme = themeFromHue(liveHue);
 
   function goScene(id){ setActiveSceneId(id); setView("scene"); }
   function goRoom(id){ setActiveRoomId(id); setView("room"); }
@@ -585,7 +681,7 @@ function App(){
       }
       return updated;
     });
-    setServiceForm({ date:"", status:"", issue:"", serviceName:"", serviceNote:"", changed:false, changedProductName:"", changedModelName:"", changedSerialNo:"" });
+    setServiceForm(emptyServiceForm());
   }
   function startDrag(itemId, e){ e.preventDefault(); e.stopPropagation(); setDraggingId(itemId); }
   function moveDrag(e){
@@ -612,22 +708,32 @@ function App(){
             </div>
             <button className="btn btn-dark">{themeLibraryOpen ? "Gizle" : "Göster"}</button>
           </div>
-          {themeLibraryOpen && Object.entries(THEME_GROUPS).map(([groupName, group]) => (
-            <div key={groupName}>
-              <div className="theme-section-title">{groupName}</div>
-              <div className="theme-grid">
-                {Object.entries(group).map(([key, theme]) => (
-                  <div key={key} className={`theme-card ${themeKey===key ? 'active' : ''}`} onClick={()=>setThemeKey(key)}>
-                    <div className="theme-preview" style={{background:`linear-gradient(135deg, ${theme.accent}, ${theme.accent2})`}} />
-                    <div>
-                      <div style={{fontWeight:700}}>{theme.label}</div>
-                      <div className="muted">{groupName}</div>
+          {themeLibraryOpen && <>
+            {Object.entries(THEME_GROUPS).map(([groupName, group]) => (
+              <div key={groupName}>
+                <div className="theme-section-title">{groupName}</div>
+                <div className="theme-grid">
+                  {Object.entries(group).map(([key, theme]) => (
+                    <div key={key} className={`theme-card ${!useLiveTheme && themeKey===key ? 'active' : ''}`} onClick={()=>{ setUseLiveTheme(false); setThemeKey(key); }}>
+                      <div className="theme-preview" style={{background:`linear-gradient(135deg, ${theme.accent}, ${theme.accent2})`}} />
+                      <div>
+                        <div style={{fontWeight:700}}>{theme.label}</div>
+                        <div className="muted">{groupName}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="theme-live-wrap">
+              <div className="theme-section-title">Canlı Tema Skalası</div>
+              <div className="theme-live-box">
+                <div className="theme-live-preview" style={{background:`linear-gradient(135deg, ${livePreviewTheme.accent}, ${livePreviewTheme.accent2})`}}></div>
+                <input className="theme-range" type="range" min="0" max="360" value={liveHue} onChange={e=>{ setUseLiveTheme(true); setLiveHue(Number(e.target.value)); }} />
+                <div className="muted" style={{marginTop:8}}>Renk skalasında gezdikçe tema değişir. Beğendiğin noktada bırakman yeterli.</div>
               </div>
             </div>
-          ))}
+          </>}
         </div>
 
         <div className="hero" style={{cursor:"default"}}>
@@ -650,36 +756,46 @@ function App(){
     </>}
 
     {view==="room"&&activeRoom && <>
-      <TopBar title={activeRoom.name} sub="Tam sayfa görünüm · sürükle / çift tıkla detay" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
-      <div
-        className="scene"
-        ref={sceneRef}
-        onMouseMove={moveDrag}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        onTouchMove={moveDrag}
-        onTouchEnd={endDrag}
-      >
-        <div className="scene-grid"></div>
-        <div className="scene-frame"></div>
-        <div className="room-label">{activeRoom.name}</div>
-        {activeRoom.items.map((item, index)=>{
-          const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
-          return <div
-            key={item.id}
-            className={`item-node ${draggingId===item.id ? "dragging" : ""}`}
-            style={{left:`${pos.x}%`, top:`${pos.y}%`}}
-            onMouseDown={(e)=>startDrag(item.id, e)}
-            onTouchStart={(e)=>startDrag(item.id, e)}
-            onDoubleClick={()=>goItem(item.id)}
-          >
-            <ProductIcon item={item} />
-            <div className="item-name">{item.name}</div>
-            {(item.modelName || item.model) && <div className="item-model">{item.modelName || item.model}</div>}
-            {item.color && <div className="item-color">{item.color}</div>}
-          </div>;
-        })}
-        {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
+      <TopBar title={activeRoom.name} sub="Detay için eşyaya dokun · sürükle çalışır" onBack={()=>setView("scene")} right={<button className="btn btn-primary" onClick={()=>setModal("item")}>+ Eşya</button>} />
+      <div className="zoom-ui">
+        <label style={{marginBottom:0}}>
+          <div className="muted" style={{marginBottom:4}}>Sayfa büyütme</div>
+          <input type="range" min="0.7" max="1.8" step="0.01" value={zoom} onChange={e=>setZoom(Number(e.target.value))} />
+        </label>
+      </div>
+      <div className="scene-scroll">
+        <div
+          className="scene"
+          ref={sceneRef}
+          style={{ transform:`scale(${zoom})`, height:`${920*zoom}px` }}
+          onMouseMove={moveDrag}
+          onMouseUp={endDrag}
+          onMouseLeave={endDrag}
+          onTouchMove={moveDrag}
+          onTouchEnd={endDrag}
+        >
+          <div className="scene-grid"></div>
+          <div className="scene-frame"></div>
+          <div className="room-label">{activeRoom.name}</div>
+          {activeRoom.items.map((item, index)=>{
+            const pos = { x: item.x ?? defaultPos(index).x, y: item.y ?? defaultPos(index).y };
+            return <div
+              key={item.id}
+              className={`item-node ${draggingId===item.id ? "dragging" : ""}`}
+              style={{left:`${pos.x}%`, top:`${pos.y}%`}}
+              onMouseDown={(e)=>startDrag(item.id, e)}
+              onTouchStart={(e)=>startDrag(item.id, e)}
+              onClick={()=>goItem(item.id)}
+            >
+              <div className="item-type">{item.type}</div>
+              <ProductIcon item={item} />
+              <div className="item-name">{item.name}</div>
+              {(item.modelName || item.model) && <div className="item-model">{item.modelName || item.model}</div>}
+              {item.color && <div className="item-color">{item.color}</div>}
+            </div>;
+          })}
+          {activeRoom.items.length===0&&<div className="empty">Bu alanda henüz eşya yok</div>}
+        </div>
       </div>
       {modal==="item"&&<Modal title="Yeni Eşya" onClose={()=>setModal(null)}><ItemForm form={itemForm} setForm={setItemForm} /><button className="btn btn-primary" style={{width:"100%"}} onClick={addItem}>Kaydet</button></Modal>}
     </>}
@@ -689,14 +805,19 @@ function App(){
         title={activeItem.name}
         sub="Eşyanın hayatı"
         onBack={()=>setView("room")}
-        right={<button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name, invoiceFiles:[]}); setModal("edit"); }}>Düzenle</button>}
+        right={<button className="btn btn-primary" onClick={()=>{ setEditForm({...activeItem, selectedName:activeItem.name, customName:activeItem.name, invoiceFiles:[]}); setModal("edit"); }}>Düzenle modu</button>}
       />
       <div className="container">
         <div className="card" style={{cursor:"default"}}>
-          <div style={{display:"flex", justifyContent:"center", marginBottom:12}}>
+          <div className="detail-title-row">
+            <div>
+              <div style={{fontWeight:700,fontSize:22}}>{activeItem.name}</div>
+              <div className="muted" style={{marginTop:4}}>{activeItem.type}</div>
+            </div>
+          </div>
+          <div style={{display:"flex", justifyContent:"center", margin:"12px 0"}}>
             <ProductIcon item={activeItem} />
           </div>
-          <div style={{fontWeight:700,marginTop:8}}>{activeItem.name}</div>
           {(activeItem.modelName || activeItem.model) && <div className="muted" style={{marginTop:4}}>Model adı: {activeItem.modelName || activeItem.model}</div>}
           {activeItem.modelNumber && <div className="muted" style={{marginTop:4}}>Model numarası: {activeItem.modelNumber}</div>}
           {activeItem.serialNo && <div className="muted" style={{marginTop:4}}>Seri no: {activeItem.serialNo}</div>}

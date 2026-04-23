@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Eşyamın Hayatı</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -49,24 +49,19 @@
     }
     .hero-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 
-    .section-strip-button {
-      display:flex; align-items:center; justify-content:space-between;
-      border:1px solid var(--line);
-      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--card)), var(--card2));
-      border-radius:20px;
-      padding:16px 18px;
+    .theme-title-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       margin-bottom:14px;
+      padding:0 2px;
       cursor:pointer;
-      box-shadow: 0 10px 24px rgba(0,0,0,.18);
     }
-    .section-strip-title {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      color: var(--text);
-      margin-bottom: 6px;
+    .theme-title-text {
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:.2px;
     }
-    .section-strip-sub { color: var(--muted); font-size: 13px; }
 
     .theme-section-title {
       font-size: 14px; font-weight: 700; margin: 14px 0 8px; color: var(--muted);
@@ -118,6 +113,42 @@
     .nature-swatch {
       width:26px; height:26px; border-radius:999px; flex-shrink:0;
       border:1px solid rgba(255,255,255,.18);
+    }
+
+    .scene-swipe-wrap {
+      position:relative;
+      overflow:hidden;
+      border-radius:22px;
+      margin-bottom:14px;
+    }
+    .scene-swipe-actions {
+      position:absolute;
+      inset:0 0 0 auto;
+      width:176px;
+      display:flex;
+      align-items:stretch;
+      justify-content:flex-end;
+      gap:8px;
+      padding:0 0 0 8px;
+    }
+    .scene-action-btn {
+      border:none;
+      width:84px;
+      border-radius:18px;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .scene-action-edit { background: linear-gradient(135deg, #475569, #334155); }
+    .scene-action-delete { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .scene-swipe-card {
+      position:relative;
+      z-index:2;
+      transition:transform .22s ease;
+      margin-bottom:0;
+    }
+    .scene-swipe-card.revealed {
+      transform:translateX(-176px);
     }
 
     .card { border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor:pointer; }
@@ -174,42 +205,68 @@
       position:absolute;
       transform:translate(-50%,-50%);
       cursor:grab;
-      text-align:center;
       z-index:4;
       touch-action:none;
       user-select:none;
-      width: 170px;
+      width: 250px;
       transition: transform .08s ease;
     }
     .item-node.dragging {
       z-index:20;
-      transform: translate(-50%,-50%) scale(1.07);
+      transform: translate(-50%,-50%) scale(1.03);
       cursor:grabbing;
     }
 
-    .item-name {
-      margin-top:6px;
-      font-size:13px;
+    .item-banner {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      min-height:112px;
+    }
+    .item-banner-icon {
+      width:84px;
+      height:84px;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:16px;
+      background:linear-gradient(135deg, var(--accentSoft), var(--card2));
+      border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      overflow:hidden;
+    }
+    .item-banner-body {
+      flex:1;
+      min-width:0;
+      text-align:left;
+    }
+    .item-banner-name {
+      font-size:15px;
+      font-weight:800;
       color:var(--text);
-      background: color-mix(in srgb, var(--card) 86%, transparent);
-      padding:4px 10px;
-      border-radius:999px;
-      display:inline-block;
-      max-width:150px;
+      margin-bottom:6px;
+      white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      white-space:nowrap;
-      border: 1px solid var(--line);
-      font-weight:700;
     }
-
-    .item-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      margin: 6px auto 0 auto;
-      background: var(--accent);
-      opacity: .9;
+    .item-banner-line {
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-top:3px;
+    }
+    .item-banner-value {
+      margin-top:6px;
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
     }
 
     .section { border-radius:18px; padding:16px; margin-bottom:14px; }
@@ -230,6 +287,7 @@
     input, select, textarea {
       width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
       background: var(--card2); color: var(--text); outline:none;
+      font-size:16px;
     }
     textarea { min-height:84px; resize:vertical; }
     label { display:block; margin-bottom:10px; }
@@ -259,6 +317,12 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.28));
     }
 
+    .item-banner .svg-icon {
+      width:72px;
+      height:72px;
+      margin:0;
+    }
+
     .service-card {
       display:block;
       background: var(--card2);
@@ -278,6 +342,11 @@
 
     @media (max-width: 760px) {
       .grid2, .grid3, .theme-grid, .nature-grid { grid-template-columns:1fr; }
+      .item-node { width:220px; }
+      .item-banner-icon { width:72px; height:72px; }
+      .scene-swipe-actions { width:160px; }
+      .scene-swipe-card.revealed { transform:translateX(-160px); }
+      .scene-action-btn { width:76px; }
     }
   </style>
 </head>
@@ -525,13 +594,13 @@ function detectSceneIcon(name=""){
 
 function defaultPos(index){
   const base = [
-    {x:5,y:5},{x:95,y:5},{x:5,y:95},{x:95,y:95},
-    {x:50,y:5},{x:50,y:95},{x:5,y:50},{x:95,y:50},
-    {x:20,y:20},{x:80,y:20},{x:20,y:80},{x:80,y:80},
-    {x:50,y:20},{x:50,y:80},{x:20,y:50},{x:80,y:50},
+    {x:10,y:10},{x:90,y:10},{x:10,y:90},{x:90,y:90},
+    {x:50,y:10},{x:50,y:90},{x:10,y:50},{x:90,y:50},
+    {x:22,y:22},{x:78,y:22},{x:22,y:78},{x:78,y:78},
+    {x:50,y:24},{x:50,y:76},{x:24,y:50},{x:76,y:50},
     {x:35,y:35},{x:65,y:35},{x:35,y:65},{x:65,y:65}
   ];
-  return base[index] || {x: 10 + (index % 5) * 20, y: 10 + Math.floor(index / 5) * 18};
+  return base[index] || {x: 14 + (index % 4) * 24, y: 14 + Math.floor(index / 4) * 18};
 }
 
 function applyTheme(theme){
@@ -539,6 +608,12 @@ function applyTheme(theme){
   Object.entries(theme).forEach(([k,v]) => {
     if(k !== "label") root.style.setProperty(`--${k}`, v);
   });
+}
+
+function formatCurrency(value){
+  const n = Number(value || 0);
+  if (!n) return "-";
+  return "₺" + n.toLocaleString("tr-TR");
 }
 
 function ProductIcon({ item }) {
@@ -1186,6 +1261,47 @@ function ServiceForm({ serviceForm, setServiceForm, onAdd }) {
   );
 }
 
+function SceneSwipeCard({ scene, onOpen, onEdit, onDelete, isRevealed, onReveal, onClose }) {
+  const touchRef = useRef({ startX:0, startY:0 });
+
+  function onTouchStart(e){
+    const t = e.touches[0];
+    touchRef.current = { startX:t.clientX, startY:t.clientY };
+  }
+
+  function onTouchEnd(e){
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchRef.current.startX;
+    const dy = Math.abs(t.clientY - touchRef.current.startY);
+    if (dy > 50) return;
+    if (dx < -40) onReveal(scene.id);
+    if (dx > 40) onClose();
+  }
+
+  return (
+    <div className="scene-swipe-wrap">
+      <div className="scene-swipe-actions">
+        <button className="scene-action-btn scene-action-edit" onClick={onEdit}>Düzenle</button>
+        <button className="scene-action-btn scene-action-delete" onClick={onDelete}>Sil</button>
+      </div>
+      <div
+        className={`hero scene-swipe-card ${isRevealed ? 'revealed' : ''}`}
+        onClick={onOpen}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div className="hero-grid">
+          <div className="hero-icon">{detectSceneIcon(scene.name)}</div>
+          <div>
+            <div style={{fontSize:20,fontWeight:700}}>{scene.name}</div>
+            <div className="muted" style={{marginTop:4}}>{scene.subs.length} alt başlık</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App(){
   const [themeKey, setThemeKey] = useState("royal_navy");
   const [themeLibraryOpen, setThemeLibraryOpen] = useState(false);
@@ -1211,6 +1327,7 @@ function App(){
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [sceneDeleteConfirm, setSceneDeleteConfirm] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
+  const [revealedSceneId, setRevealedSceneId] = useState(null);
 
   const sceneRef=useRef(null);
   const shellRef=useRef(null);
@@ -1239,7 +1356,7 @@ function App(){
   const activeRoom = useMemo(() => activeScene ? activeScene.subs.find(r => r.id === activeRoomId) || null : null, [activeScene, activeRoomId]);
   const activeItem = useMemo(() => activeRoom ? activeRoom.items.find(i => i.id === activeItemId) || null : null, [activeRoom, activeItemId]);
 
-  function goScene(id){ setActiveSceneId(id); setView("scene"); }
+  function goScene(id){ setActiveSceneId(id); setView("scene"); setRevealedSceneId(null); }
   function goRoom(id){ setActiveRoomId(id); setView("room"); }
   function goItem(id){ setActiveItemId(id); setView("item"); }
 
@@ -1263,6 +1380,7 @@ function App(){
     setSceneDeleteConfirm(null);
     setView("home");
     setActiveSceneId("");
+    setRevealedSceneId(null);
   }
 
   function addRoom(){
@@ -1335,6 +1453,7 @@ function App(){
   }
 
   function startDrag(itemId, e){
+    if (e.touches && e.touches.length === 2) return;
     e.preventDefault();
     setDraggingId(itemId);
   }
@@ -1345,13 +1464,20 @@ function App(){
     e.preventDefault && e.preventDefault();
 
     const rect = sceneRef.current.getBoundingClientRect();
+    const itemHalfWidth = window.innerWidth <= 760 ? 110 : 125;
+    const itemHalfHeight = 56;
+    const minX = (itemHalfWidth / rect.width) * 100;
+    const maxX = 100 - minX;
+    const minY = (itemHalfHeight / rect.height) * 100;
+    const maxY = 100 - minY;
+
     const x = ((point.clientX - rect.left) / rect.width) * 100;
     const y = ((point.clientY - rect.top) / rect.height) * 100;
 
     updateItem(draggingId, i => ({
       ...i,
-      x: Math.max(2, Math.min(98, x)),
-      y: Math.max(2, Math.min(98, y))
+      x: Math.max(minX, Math.min(maxX, x)),
+      y: Math.max(minY, Math.min(maxY, y))
     }));
   }
 
@@ -1386,6 +1512,7 @@ function App(){
       pinchRef.current.distance = distance(e.touches[0], e.touches[1]);
       pinchRef.current.startScale = sceneScale;
       setDraggingId(null);
+      return;
     }
   }
 
@@ -1406,18 +1533,18 @@ function App(){
 
   const activeItemMeta = activeItem ? (ACQUISITION_OPTIONS[activeItem.acquisitionType] || ACQUISITION_OPTIONS["Satın alındı"]) : null;
 
-  return <div className="app">
+  return <div className="app" onClick={()=>revealedSceneId && setRevealedSceneId(null)}>
     {view==="home" && <>
       <TopBar
         title="Eşyamın Hayatı"
         sub={`${allItems.length} eşya · ₺${totalValue}`}
-        right={<button className="btn btn-primary" onClick={()=>setModal("scene")}>+ Başlık</button>}
+        right={<button className="btn btn-primary" onClick={(e)=>{ e.stopPropagation(); setModal("scene"); }}>+ Başlık</button>}
       />
 
       <div className="container">
-        <div className="section-strip-button" onClick={()=>setThemeLibraryOpen(v=>!v)}>
+        <div className="theme-title-row" onClick={()=>setThemeLibraryOpen(v=>!v)}>
           <div>
-            <div className="section-strip-title">Tema</div>
+            <div className="theme-title-text">Tema</div>
             <div className="section-strip-sub">Tema alanını açmak için dokun</div>
           </div>
           <button className="btn btn-dark">{themeLibraryOpen ? "Kapat" : "Aç"}</button>
@@ -1492,36 +1619,20 @@ function App(){
         </div>}
 
         {scenes.map(s =>
-          <div key={s.id} className="hero" onClick={()=>goScene(s.id)}>
-            <div className="row">
-              <div className="hero-grid" style={{flex:1}}>
-                <div className="hero-icon">{detectSceneIcon(s.name)}</div>
-                <div>
-                  <div style={{fontSize:20,fontWeight:700}}>{s.name}</div>
-                  <div className="muted" style={{marginTop:4}}>{s.subs.length} alt başlık</div>
-                </div>
-              </div>
-
-              <div className="hero-actions">
-                <button
-                  className="btn btn-dark"
-                  onClick={(e)=>{
-                    e.stopPropagation();
-                    setActiveSceneId(s.id);
-                    setSceneEditName(s.name);
-                    setModal("sceneEdit");
-                  }}
-                >Düzenle</button>
-
-                <button
-                  className="btn btn-danger"
-                  onClick={(e)=>{
-                    e.stopPropagation();
-                    setSceneDeleteConfirm(s.id);
-                  }}
-                >Sil</button>
-              </div>
-            </div>
+          <div key={s.id} onClick={(e)=>e.stopPropagation()}>
+            <SceneSwipeCard
+              scene={s}
+              isRevealed={revealedSceneId===s.id}
+              onReveal={(id)=>setRevealedSceneId(id)}
+              onClose={()=>setRevealedSceneId(null)}
+              onOpen={()=>goScene(s.id)}
+              onEdit={()=>{
+                setActiveSceneId(s.id);
+                setSceneEditName(s.name);
+                setModal("sceneEdit");
+              }}
+              onDelete={()=>setSceneDeleteConfirm(s.id)}
+            />
           </div>
         )}
       </div>
@@ -1625,9 +1736,17 @@ function App(){
                 onTouchStart={(e)=>startDrag(item.id, e)}
                 onDoubleClick={()=>handleItemDoubleClick(item.id)}
               >
-                <ProductIcon item={item} />
-                <div className="item-name">{item.name || "Eşya"}</div>
-                <div className="item-dot"></div>
+                <div className="item-banner">
+                  <div className="item-banner-icon">
+                    <ProductIcon item={item} />
+                  </div>
+                  <div className="item-banner-body">
+                    <div className="item-banner-name">{item.name || "Eşya"}</div>
+                    <div className="item-banner-line">Kategori: {item.category || "-"}</div>
+                    <div className="item-banner-line">Model: {item.modelName || "-"}</div>
+                    <div className="item-banner-value">Değer: {formatCurrency(item.purchasePrice)}</div>
+                  </div>
+                </div>
               </div>
             );
           })}

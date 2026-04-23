@@ -223,16 +223,33 @@
       position:relative;
       cursor:grab;
       z-index:4;
-      touch-action:pan-y;
+      touch-action:none;
       user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+      -webkit-user-drag:none;
       width:100%;
-      transition: transform .08s ease, opacity .12s ease;
+      transition: transform .08s ease, opacity .12s ease, box-shadow .12s ease;
+    }
+    .item-node, .item-node * {
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+      -webkit-user-drag:none;
+    }
+    .item-node.press-ready {
+      transform:scale(0.992);
     }
     .item-node.dragging {
       z-index:20;
       cursor:grabbing;
       opacity:.92;
-      transform:scale(1.01);
+      transform:scale(1.02) rotate(-1deg);
+      animation:itemWiggle .18s ease-in-out infinite alternate;
+    }
+    @keyframes itemWiggle {
+      from { transform:scale(1.02) rotate(-1deg); }
+      to { transform:scale(1.02) rotate(1deg); }
     }
 
     .item-banner {
@@ -1132,6 +1149,28 @@ function ItemForm({ form, setForm }){
   function setField(key, value){
     setForm(prev => {
       const next = { ...prev, [key]: value };
+
+      if (key === "acquisitionType") {
+        const nextIsPriceMode =
+          value === "Satın alındı" ||
+          value === "İkinci el alındı" ||
+          value === "Kiralandı";
+
+        const nextIsGiftMode =
+          value === "Hediye geldi" ||
+          value === "Miras kaldı" ||
+          value === "İş yerinden verildi";
+
+        if (!nextIsPriceMode) {
+          next.realPrice = "";
+          next.discountAmount = "";
+        }
+        if (!nextIsGiftMode) {
+          next.sourcePerson = "";
+          next.sourceReason = "";
+        }
+      }
+
       const isPriceMode =
         next.acquisitionType === "Satın alındı" ||
         next.acquisitionType === "İkinci el alındı" ||
@@ -1143,6 +1182,7 @@ function ItemForm({ form, setForm }){
         const total = Math.max(real - discount, 0);
         next.purchasePrice = total ? String(total) : "";
       }
+
       return next;
     });
   }
@@ -1438,12 +1478,17 @@ function RoomSwipeCard({ room, onOpen, onEdit, onDelete, isRevealed, onReveal, o
   );
 }
 
-function ItemSortableCard({ item, isDragging, onPointerDown, onTouchStart, onOpen }) {
+function ItemSortableCard({ item, isDragging, isPressReady, onPointerDown, onTouchStart, onPressCancel, onOpen }) {
   return (
     <div
-      className={`item-node ${isDragging ? "dragging" : ""}`}
+      className={`item-node ${isDragging ? "dragging" : ""} ${isPressReady ? "press-ready" : ""}`}
       onMouseDown={onPointerDown}
       onTouchStart={onTouchStart}
+      onMouseUp={onPressCancel}
+      onMouseLeave={onPressCancel}
+      onTouchEnd={onPressCancel}
+      onTouchCancel={onPressCancel}
+      onDragStart={(e)=>e.preventDefault()}
       onDoubleClick={onOpen}
       onClick={onOpen}
     >
@@ -1490,6 +1535,7 @@ function App(){
   const [serviceForm,setServiceForm]=useState(emptyServiceForm());
 
   const [draggingId,setDraggingId]=useState(null);
+  const [pressReadyId,setPressReadyId]=useState(null);
   const [sceneScale, setSceneScale] = useState(1);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [sceneDeleteConfirm, setSceneDeleteConfirm] = useState(null);
@@ -1661,9 +1707,12 @@ function App(){
 
   function startDrag(itemId, index, e){
     if (e.touches && e.touches.length === 2) return;
+    clearTimeout(longPressTimerRef.current);
+    setPressReadyId(itemId);
     const activate = () => {
       dragIndexRef.current = index;
       setDraggingId(itemId);
+      setPressReadyId(null);
     };
     if (e.touches) {
       longPressTimerRef.current = setTimeout(activate, 180);
@@ -1695,6 +1744,7 @@ function App(){
     clearTimeout(longPressTimerRef.current);
     longPressTimerRef.current = null;
     setDraggingId(null);
+    setPressReadyId(null);
     dragIndexRef.current = null;
   }
 
@@ -1727,6 +1777,8 @@ function App(){
       pinchRef.current.distance = distance(e.touches[0], e.touches[1]);
       pinchRef.current.startScale = sceneScale;
       setDraggingId(null);
+      setPressReadyId(null);
+      clearTimeout(longPressTimerRef.current);
       return;
     }
   }
@@ -1941,8 +1993,10 @@ function App(){
               <ItemSortableCard
                 item={item}
                 isDragging={draggingId===item.id}
+                isPressReady={pressReadyId===item.id}
                 onPointerDown={(e)=>startDrag(item.id, index, e)}
                 onTouchStart={(e)=>startDrag(item.id, index, e)}
+                onPressCancel={()=>{ if(!draggingId) endDrag(); }}
                 onOpen={()=>handleItemDoubleClick(item.id)}
               />
             </div>
